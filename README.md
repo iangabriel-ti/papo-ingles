@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Papo: aprenda inglês conversando
 
-## Getting Started
+App web no estilo Duolingo para aprender inglês do A1 ao C1: lições rápidas geradas por IA e conversas por voz com o Kiko, a arara professora. A IA é o Claude, da Anthropic.
 
-First, run the development server:
+## O que já funciona
+
+- **Onboarding**: motivação, meta diária e escolha entre começar do zero ou fazer o teste de nivelamento.
+- **Teste de nivelamento**: 15 perguntas do A1 ao C1, que param quando o aluno não passa de um nível.
+- **Trilha**: 5 unidades e 20 temas. Cada tema tem duas etapas:
+  - **Lição**: 10 exercícios gerados pela IA (traduzir, montar frase, completar, ouvir e escolher, falar). As questões erradas voltam no fim, como no Duolingo.
+  - **Conversa**: role-play por voz com o Kiko. Cada frase do aluno recebe uma correção, e ao final sai um relatório com nota, pontos fortes, pontos a melhorar e palavras novas.
+- **Gamificação**: XP, ofensiva, meta diária, conquistas, sons, confetes e gráfico da semana.
+- **Vocabulário**: as palavras de cada conversa ficam salvas, com áudio e revisão em cartões.
+- **Planos**: grátis (4 lições por dia) e Super (ilimitado, com conversa livre). O pagamento ainda é só uma demonstração.
+- **Voz**: o reconhecimento e a síntese de voz são os do próprio navegador e não têm custo. A fala funciona no Chrome, no Edge e no Safari; no Firefox, o aluno digita.
+
+## Rodar no computador
+
+1. Instale o Node.js 20 ou mais recente.
+2. Copie o arquivo `.env.example` para `.env.local` e coloque a sua chave da API da Anthropic.
+3. Instale as dependências e inicie o app:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Abra http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Publicar na internet (Vercel)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Suba este projeto para um repositório no GitHub.
+2. Em https://vercel.com, clique em **Add New → Project** e importe o repositório.
+3. Em **Environment Variables**, adicione `ANTHROPIC_API_KEY`.
+4. Clique em **Deploy**.
 
-## Learn More
+## Onde mudar as coisas
 
-To learn more about Next.js, take a look at the following resources:
+| O quê | Arquivo |
+|---|---|
+| Nome do app, preços, limite grátis, XP | `src/lib/config.ts` |
+| Unidades e temas da trilha | `src/lib/scenarios.ts` |
+| Perguntas do nivelamento | `src/lib/placement.ts` |
+| Instruções da IA (professor, exercícios, relatório) | `src/lib/prompts.ts` |
+| Modelo e esforço da IA | variáveis `CLAUDE_MODEL` e `CLAUDE_EFFORT` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Próxima fase
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Login e banco de dados** (por exemplo, Supabase): hoje o progresso fica salvo só no navegador do aluno.
+- **Pagamento** (Stripe ou Mercado Pago, com cartão e Pix) e limite do plano grátis controlado no servidor.
+- **Limite de uso por usuário** nas rotas da IA, para ninguém usar a sua chave sem controle.
+- **Vozes premium** para o Kiko.
+- **Versão para App Store e Google Play.**
