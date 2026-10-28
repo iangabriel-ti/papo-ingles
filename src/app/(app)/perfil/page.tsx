@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
 import { Mascot } from "@/components/Mascot";
+import { formatDate, openBillingPortal } from "@/lib/billing";
 import { DAILY_GOALS } from "@/lib/config";
 import { LEVEL_INFO } from "@/lib/levels";
 import { PATH } from "@/lib/path";
-import { daysAgo, resetProgress, useProgress, type Progress } from "@/lib/progress";
+import { daysAgo, EMPTY_PROGRESS, resetProgress, useProgress, type Progress } from "@/lib/progress";
 import { getScenario, UNITS } from "@/lib/scenarios";
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -30,7 +33,10 @@ function achievements(p: Progress) {
 export default function ProfilePage() {
   const router = useRouter();
   const { progress, update } = useProgress();
+  const auth = useAuth();
+  const [billingError, setBillingError] = useState<string | null>(null);
   const level = progress.level ?? "A1";
+  const entitlement = auth.account?.entitlement;
 
   const week = Array.from({ length: 7 }, (_, i) => {
     const day = daysAgo(6 - i);
@@ -144,6 +150,49 @@ export default function ProfilePage() {
         </section>
       )}
 
+      {auth.enabled && auth.account && (
+        <section>
+          <h2 className="mb-3 text-xl font-black">Conta</h2>
+          <div className="card divide-y-2 divide-line">
+            <div className="flex items-center justify-between gap-4 p-4 font-bold">
+              E-mail
+              <span className="truncate font-semibold text-muted">{auth.account.user.email}</span>
+            </div>
+            <div className="flex items-center justify-between gap-4 p-4 font-bold">
+              Plano
+              <span className="text-right font-semibold text-muted">
+                {entitlement?.premium
+                  ? entitlement.source === "pix"
+                    ? `Super anual até ${formatDate(entitlement.premiumUntil)}`
+                    : `Super · renova em ${formatDate(entitlement.premiumUntil)}`
+                  : "Grátis"}
+              </span>
+            </div>
+            {auth.account.hasStripeCustomer && entitlement?.source !== "pix" ? (
+              <button
+                onClick={async () => setBillingError(await openBillingPortal())}
+                className="block w-full p-4 text-left font-bold text-brand-600 hover:bg-black/[0.02]"
+              >
+                Gerenciar assinatura e pagamentos
+              </button>
+            ) : (
+              !entitlement?.premium && (
+                <Link href="/planos" className="block p-4 font-bold text-brand-600 hover:bg-black/[0.02]">
+                  Conhecer o Papo Super
+                </Link>
+              )
+            )}
+            {billingError && <p className="p-4 text-sm font-bold text-bad">{billingError}</p>}
+            <button
+              onClick={() => auth.signOut()}
+              className="block w-full p-4 text-left font-bold text-muted hover:bg-black/[0.02]"
+            >
+              Sair da conta
+            </button>
+          </div>
+        </section>
+      )}
+
       <section>
         <h2 className="mb-3 text-xl font-black">Configurações</h2>
         <div className="card divide-y-2 divide-line">
@@ -191,9 +240,14 @@ export default function ProfilePage() {
           </Link>
           <button
             onClick={() => {
-              if (confirm("Apagar todo o seu progresso neste navegador?")) {
-                resetProgress();
-                router.push("/");
+              if (confirm("Apagar todo o seu progresso? Isso não pode ser desfeito.")) {
+                if (auth.enabled && auth.userId) {
+                  // Zera também no servidor, mantendo a conta.
+                  update((p) => ({ ...EMPTY_PROGRESS, ownerId: p.ownerId, plan: p.plan }));
+                } else {
+                  resetProgress();
+                }
+                router.push(auth.enabled ? "/comecar" : "/");
               }
             }}
             className="block w-full p-4 text-left font-bold text-bad hover:bg-black/[0.02]"

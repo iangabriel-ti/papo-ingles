@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { guardAiRequest, refundAiUsage } from "@/lib/account";
 import { EFFORT, FALLBACK_BETA, friendlyError, getClient, MODEL, textOf } from "@/lib/claude";
 import { LEVEL_INFO } from "@/lib/levels";
 import { EXERCISES_SCHEMA, exercisesSystemPrompt } from "@/lib/prompts";
@@ -22,6 +23,10 @@ export async function POST(request: Request) {
       { status: 503 },
     );
   }
+
+  const usage = { lessons: 1, calls: 1 };
+  const blocked = await guardAiRequest(usage);
+  if (blocked) return blocked;
 
   try {
     const response = await client.beta.messages.create({
@@ -46,6 +51,7 @@ Student level: ${scenario.level}. ${LEVEL_INFO[scenario.level].teacherStyle}`,
     });
 
     if (response.stop_reason === "refusal" || response.stop_reason === "max_tokens") {
+      await refundAiUsage(usage);
       return NextResponse.json({ error: "Não consegui preparar esta lição. Tente de novo." }, { status: 502 });
     }
 
@@ -55,10 +61,12 @@ Student level: ${scenario.level}. ${LEVEL_INFO[scenario.level].teacherStyle}`,
     const exercises = data.success ? data.data.exercises.filter(isValidExercise) : [];
     if (exercises.length < 5) {
       console.error("Unusable exercises:", textOf(response.content));
+      await refundAiUsage(usage);
       return NextResponse.json({ error: "Não consegui preparar esta lição. Tente de novo." }, { status: 502 });
     }
     return NextResponse.json({ exercises });
   } catch (error) {
+    await refundAiUsage(usage);
     const { message, status } = friendlyError(error);
     return NextResponse.json({ error: message }, { status });
   }

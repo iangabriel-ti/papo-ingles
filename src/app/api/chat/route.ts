@@ -1,13 +1,15 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { guardAiRequest, refundAiUsage } from "@/lib/account";
 import { EFFORT, FALLBACK_BETA, friendlyError, getClient, MODEL, textOf } from "@/lib/claude";
 import { isLevel } from "@/lib/levels";
 import { CHAT_SCHEMA, chatSystemPrompt, LAST_TURN_NOTE, START_MESSAGE } from "@/lib/prompts";
-import { getScenario } from "@/lib/scenarios";
+import { FREE_TALK, getScenario } from "@/lib/scenarios";
 import { TeacherTurnSchema } from "@/lib/types";
 
 const MAX_HISTORY = 120;
+const MAX_BODY_BYTES = 400_000;
 
 const RequestSchema = z.object({
   scenarioId: z.string(),
@@ -22,7 +24,15 @@ const RequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const parsed = RequestSchema.safeParse(await request.json().catch(() => null));
+  const body = await request.text();
+  if (body.length > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: "Esta conversa ficou longa demais. Finalize e comece outra." }, { status: 413 });
+  }
+  let json: unknown = null;
+  try {
+    json = JSON.parse(body);
+  } catch {}
+  const parsed = RequestSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json({ error: "Pedido inválido." }, { status: 400 });
   }
@@ -46,6 +56,11 @@ export async function POST(request: Request) {
       { status: 503 },
     );
   }
+
+  // Abrir a conversa conta como uma lição; cada mensagem conta como uma chamada à IA.
+  const usage = { lessons: userText === null ? 1 : 0, calls: 1 };
+  const blocked = await guardAiRequest({ ...usage, premiumOnly: scenarioId === FREE_TALK.id });
+  if (blocked) return blocked;
 
   const userMessage: Anthropic.Beta.BetaMessageParam = {
     role: "user",
@@ -90,6 +105,7 @@ export async function POST(request: Request) {
       turn: turn.data,
     });
   } catch (error) {
+    await refundAiUsage(usage);
     const { message, status } = friendlyError(error);
     return NextResponse.json({ error: message }, { status });
   }

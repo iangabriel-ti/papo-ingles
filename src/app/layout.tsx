@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
+import { AuthProvider } from "@/components/AuthProvider";
 import { APP_NAME, APP_TAGLINE } from "@/lib/config";
 import "./globals.css";
 
@@ -25,7 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${nunito.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${nunito.variable} font-sans antialiased`}>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

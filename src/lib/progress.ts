@@ -21,6 +21,7 @@ export type SessionRecord = {
 export type VocabularyItem = Feedback["vocabulary"][number] & { addedAt: string };
 
 export type Progress = {
+  ownerId: string | null; // conta dona deste progresso (null = visitante sem login)
   onboarded: boolean;
   name: string;
   motivation: string | null;
@@ -40,9 +41,10 @@ export type Progress = {
 };
 
 const STORAGE_KEY = "papo-progress-v2";
-const CHANGE_EVENT = "papo-progress-change";
+export const CHANGE_EVENT = "papo-progress-change";
 
 export const EMPTY_PROGRESS: Progress = {
+  ownerId: null,
   onboarded: false,
   name: "",
   motivation: null,
@@ -75,28 +77,32 @@ export function daysAgo(n: number) {
   return dayKey(d);
 }
 
+// Completa um progresso salvo (no navegador ou no servidor) com os campos novos.
+export function normalizeProgress(stored: Partial<Progress>): Progress {
+  const data: Progress = {
+    ...EMPTY_PROGRESS,
+    ...stored,
+    settings: { ...EMPTY_PROGRESS.settings, ...stored.settings },
+  };
+  if (!isLevel(data.level)) data.level = null;
+  // A ofensiva zera se o aluno pulou um dia.
+  if (data.lastPracticeDay && data.lastPracticeDay !== today() && data.lastPracticeDay !== daysAgo(1)) {
+    data.streak = 0;
+  }
+  return data;
+}
+
 export function loadProgress(): Progress {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return EMPTY_PROGRESS;
-    const stored = JSON.parse(raw);
-    const data: Progress = {
-      ...EMPTY_PROGRESS,
-      ...stored,
-      settings: { ...EMPTY_PROGRESS.settings, ...stored.settings },
-    };
-    if (!isLevel(data.level)) data.level = null;
-    // A ofensiva zera se o aluno pulou um dia.
-    if (data.lastPracticeDay && data.lastPracticeDay !== today() && data.lastPracticeDay !== daysAgo(1)) {
-      data.streak = 0;
-    }
-    return data;
+    return normalizeProgress(JSON.parse(raw));
   } catch {
     return EMPTY_PROGRESS;
   }
 }
 
-function saveProgress(progress: Progress) {
+export function saveProgress(progress: Progress) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   } catch {

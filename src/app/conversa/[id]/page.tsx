@@ -134,6 +134,8 @@ export default function ConversationPage() {
           }),
         });
         const data = await res.json();
+        if (res.status === 401) return router.replace(`/entrar?next=${encodeURIComponent(`/conversa/${id}`)}`);
+        if (res.status === 402) return router.replace("/planos");
         if (!res.ok) throw new Error(data.error ?? "Erro ao falar com a IA.");
         const turn: TeacherTurn = data.turn;
         setHistory((prev) => [...prev, data.userMessage, data.assistantMessage]);
@@ -159,7 +161,7 @@ export default function ConversationPage() {
         setWaiting(false);
       }
     },
-    [history, id, isFreeTalk, level, say, studentTurns],
+    [history, id, isFreeTalk, level, router, say, studentTurns],
   );
 
   // Começa a conversa: o Kiko fala primeiro.

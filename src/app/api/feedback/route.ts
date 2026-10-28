@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { guardAiRequest, refundAiUsage } from "@/lib/account";
 import { EFFORT, FALLBACK_BETA, friendlyError, getClient, MODEL, textOf } from "@/lib/claude";
 import { isLevel, LEVEL_INFO } from "@/lib/levels";
 import { FEEDBACK_SCHEMA, FEEDBACK_SYSTEM_PROMPT } from "@/lib/prompts";
@@ -34,6 +35,10 @@ export async function POST(request: Request) {
     );
   }
 
+  const usage = { lessons: 0, calls: 1 };
+  const blocked = await guardAiRequest(usage);
+  if (blocked) return blocked;
+
   const conversation = transcript
     .map((line) => `${line.speaker === "teacher" ? "Teacher" : "Student"}: ${line.text}`)
     .join("\n");
@@ -67,6 +72,7 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ feedback: feedback.data });
   } catch (error) {
+    await refundAiUsage(usage);
     const { message, status } = friendlyError(error);
     return NextResponse.json({ error: message }, { status });
   }

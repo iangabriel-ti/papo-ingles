@@ -298,6 +298,8 @@ export default function LessonPage() {
         body: JSON.stringify({ scenarioId: id }),
       });
       const data = await res.json();
+      if (res.status === 401) return router.replace(`/entrar?next=${encodeURIComponent(`/licao/${id}`)}`);
+      if (res.status === 402) return router.replace("/planos");
       if (!res.ok) throw new Error(data.error ?? "Erro ao carregar a lição.");
       setQueue(data.exercises);
       setTotal(data.exercises.length);

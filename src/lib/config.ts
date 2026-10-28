@@ -10,6 +10,13 @@ export const LESSON_TURNS = 6;
 // Quantas lições (exercícios ou conversa) por dia o plano grátis permite.
 export const FREE_DAILY_LESSONS = 4;
 
+// Teto de chamadas à IA por dia, para proteger o custo contra abusos.
+// Uma conversa usa cerca de 8 chamadas; uma lição de exercícios, 1.
+export const DAILY_AI_CALLS = { free: 60, premium: 400 };
+
+// Preços em centavos, usados no pagamento via Pix (o cartão usa os preços do Stripe).
+export const YEARLY_PRICE_CENTS = 29990;
+
 // XP ganho em cada atividade.
 export const XP_EXERCISE_LESSON = 10;
 export const XP_PERFECT_BONUS = 5;

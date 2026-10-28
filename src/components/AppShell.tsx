@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { APP_NAME } from "@/lib/config";
 import { lessonsLeftToday, useProgress, xpToday } from "@/lib/progress";
+import { useAuth } from "./AuthProvider";
 import { Mascot } from "./Mascot";
 
 const NAV = [
@@ -91,12 +92,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { progress, loaded } = useProgress();
+  const auth = useAuth();
+  const needsLogin = auth.enabled && !auth.loading && !auth.userId && !auth.signingOut;
+  const ready = loaded && !auth.loading && auth.synced && !needsLogin;
 
   useEffect(() => {
-    if (loaded && !progress.onboarded) router.replace("/comecar");
-  }, [loaded, progress.onboarded, router]);
+    if (needsLogin) router.replace(`/entrar?next=${encodeURIComponent(pathname)}`);
+    else if (ready && !progress.onboarded) router.replace("/comecar");
+  }, [needsLogin, ready, progress.onboarded, router, pathname]);
 
-  if (!loaded || !progress.onboarded) {
+  if (!ready || !progress.onboarded) {
     return (
       <div className="grid min-h-dvh place-items-center">
         <Mascot className="animate-bob" />
