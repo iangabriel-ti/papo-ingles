@@ -4,14 +4,14 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CompletionScreen, ErrorScreen, LessonTopBar, LoadingLesson } from "@/components/LessonParts";
-import { BulbIcon, CheckIcon, CloseIcon, MicIcon, SpeakerIcon, TurtleIcon } from "@/components/Icons";
+import { BulbIcon, CheckIcon, CloseIcon, MicIcon, SpeakerIcon, StopIcon, TurtleIcon } from "@/components/Icons";
 import { MascotSays } from "@/components/Mascot";
 import { XP_EXERCISE_LESSON, XP_PERFECT_BONUS } from "@/lib/config";
 import { findNode } from "@/lib/path";
 import { lessonsLeftToday, loadProgress, useProgress, withActivityCompleted, withLessonStarted } from "@/lib/progress";
 import { getScenario } from "@/lib/scenarios";
 import { playSound } from "@/lib/sounds";
-import { speak, useSpeechRecognition } from "@/lib/speech";
+import { compareSpeech, speak, useSpeechRecognition } from "@/lib/speech";
 import { normalizeSentence, type Exercise } from "@/lib/types";
 
 type Result = { correct: boolean; answerLabel: string; heard?: string };
@@ -31,25 +31,6 @@ function shuffle<T>(items: T[]) {
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
-}
-
-function wordsOf(sentence: string) {
-  return normalizeSentence(sentence).split(" ").filter(Boolean);
-}
-
-// Quanto da frase-alvo apareceu no que o aluno falou (0 a 1).
-function speechMatch(target: string, heard: string) {
-  const expected = wordsOf(target);
-  const said = wordsOf(heard);
-  let hits = 0;
-  for (const word of expected) {
-    const i = said.indexOf(word);
-    if (i >= 0) {
-      hits++;
-      said.splice(i, 1);
-    }
-  }
-  return expected.length ? hits / expected.length : 0;
 }
 
 function SpeakerButton({ text, size = "lg", slow = false }: { text: string; size?: "lg" | "sm"; slow?: boolean }) {
@@ -100,18 +81,28 @@ function ExerciseView({
   exercise,
   locked,
   onAnswerChange,
-  onSpoken,
   onSkipSpeaking,
 }: {
   exercise: Exercise;
   locked: boolean;
   onAnswerChange: (answer: number | string[] | null) => void;
-  onSpoken: (heard: string) => void;
   onSkipSpeaking: () => void;
 }) {
   const [selected, setSelected] = useState<number | null>(null);
   const [picked, setPicked] = useState<number[]>([]);
+  const [heard, setHeard] = useState<string | null>(null);
   const speech = useSpeechRecognition();
+
+  // Grava a fala inteira; o aluno confere o que foi entendido antes de verificar.
+  const record = () => {
+    setHeard(null);
+    onAnswerChange(null);
+    speech.start((text) => {
+      if (!text) return;
+      setHeard(text);
+      onAnswerChange([text]);
+    });
+  };
 
   const bank = useMemo(
     () =>
@@ -220,36 +211,63 @@ function ExerciseView({
         </div>
       );
 
-    case "speak":
+    case "speak": {
+      const comparison = heard ? compareSpeech(exercise.sentence_en, heard, normalizeSentence) : null;
       return (
-        <div className="space-y-10">
+        <div className="space-y-8">
           <MascotSays size={86}>
             <span className="flex items-center gap-3">
               <SpeakerButton text={exercise.sentence_en} size="sm" />
               <span>
-                <span className="block font-display text-lg font-bold text-brand-500">{exercise.sentence_en}</span>
+                <span className="block font-display text-lg font-bold text-brand-500">
+                  {comparison
+                    ? comparison.words.map((w, i) => (
+                        <span key={i} className={w.ok ? "text-ok" : "text-sun-700 underline decoration-wavy underline-offset-4"}>
+                          {w.word}{" "}
+                        </span>
+                      ))
+                    : exercise.sentence_en}
+                </span>
                 <span className="block text-sm text-muted">{exercise.translation_pt}</span>
               </span>
             </span>
           </MascotSays>
           {speech.supported ? (
-            <div className="text-center">
-              <button
-                disabled={locked}
-                onClick={() => (speech.listening ? speech.stop() : speech.start(onSpoken))}
-                className={`btn w-full max-w-sm py-5 text-base ${speech.listening ? "btn-primary mic-listening" : "btn-dark"}`}
-              >
-                <MicIcon size={22} /> {speech.listening ? "Ouvindo… toque para parar" : "Toque para falar"}
-              </button>
-              {speech.interim && <p className="mt-4 text-muted">“{speech.interim}”</p>}
-              {speech.error && <p className="mt-4 text-sm font-medium text-bad">{speech.error}</p>}
+            <div className="flex flex-col items-center gap-4 text-center">
+              {speech.listening ? (
+                <>
+                  <p className="min-h-14 text-lg font-semibold text-brand-500">
+                    {speech.transcript ? `“${speech.transcript}”` : "Pode falar, sem pressa…"}
+                  </p>
+                  <button onClick={speech.stop} className="btn btn-primary mic-listening w-full max-w-sm py-5 text-base">
+                    <StopIcon size={20} /> Terminei de falar
+                  </button>
+                  <p className="text-sm text-muted">Pode fazer pausas: eu espero você terminar a frase.</p>
+                </>
+              ) : heard ? (
+                <>
+                  <p className="text-muted">
+                    Você disse: <span className="font-semibold text-ink">“{heard}”</span>
+                  </p>
+                  {!locked && (
+                    <button onClick={record} className="btn btn-white">
+                      <MicIcon size={20} /> Falar de novo
+                    </button>
+                  )}
+                </>
+              ) : (
+                <button disabled={locked} onClick={record} className="btn btn-dark w-full max-w-sm py-5 text-base">
+                  <MicIcon size={22} /> Toque para falar
+                </button>
+              )}
+              {speech.error && !speech.listening && <p className="text-sm font-medium text-bad">{speech.error}</p>}
             </div>
           ) : (
             <p className="text-center text-muted">
               Seu navegador não reconhece voz. Use o Chrome, o Edge ou o Safari para praticar a fala.
             </p>
           )}
-          {!locked && (
+          {!locked && !speech.listening && (
             <div className="text-center">
               <button onClick={onSkipSpeaking} className="btn btn-ghost">
                 Não posso falar agora
@@ -258,6 +276,7 @@ function ExerciseView({
           )}
         </div>
       );
+    }
   }
 }
 
@@ -279,6 +298,7 @@ export default function LessonPage() {
   const [answer, setAnswer] = useState<number | string[] | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [mistakes, setMistakes] = useState(0);
+  const [attempt, setAttempt] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);
   const startedAt = useRef(Date.now());
@@ -320,13 +340,16 @@ export default function LessonPage() {
   const exercise = queue[position];
 
   const check = useCallback(
-    (heard?: string) => {
+    () => {
       if (!exercise || result) return;
       let correct = false;
+      let heard: string | undefined;
       if (exercise.type === "build_sentence") {
         correct = Array.isArray(answer) && normalizeSentence(answer.join(" ")) === normalizeSentence(exercise.sentence_en);
       } else if (exercise.type === "speak") {
-        correct = speechMatch(exercise.sentence_en, heard ?? "") >= 0.7;
+        heard = Array.isArray(answer) ? answer[0] : "";
+        // Precisa acertar pelo menos 80% das palavras da frase.
+        correct = compareSpeech(exercise.sentence_en, heard, normalizeSentence).score >= 0.8;
       } else {
         correct = answer === exercise.correct_option;
       }
@@ -363,6 +386,13 @@ export default function LessonPage() {
     if (position + 1 >= queue.length) finish();
     else setPosition((p) => p + 1);
   }, [position, queue.length, finish]);
+
+  // Na fala, o aluno pode repetir a frase depois de errar (o erro já foi contado).
+  const retrySpeaking = useCallback(() => {
+    setResult(null);
+    setAnswer(null);
+    setAttempt((a) => a + 1);
+  }, []);
 
   // Pular a fala tira o exercício da lição sem contar como erro.
   const skipSpeaking = useCallback(() => {
@@ -429,11 +459,10 @@ export default function LessonPage() {
         )}
         <h1 className="heading mb-8 text-2xl">{TITLES[exercise.type]}</h1>
         <ExerciseView
-          key={position}
+          key={`${position}-${attempt}`}
           exercise={exercise}
           locked={result !== null}
           onAnswerChange={setAnswer}
-          onSpoken={(heard) => check(heard)}
           onSkipSpeaking={skipSpeaking}
         />
       </main>
@@ -454,6 +483,9 @@ export default function LessonPage() {
                 {result.correct ? ["Muito bem!", "Excelente!", "Mandou bem!", "Perfeito!"][position % 4] : "Resposta correta:"}
               </p>
               {!result.correct && <p className="mt-1 font-semibold">{result.answerLabel}</p>}
+              {!result.correct && exercise.type === "speak" && (
+                <p className="mt-1 text-sm opacity-90">As palavras sublinhadas não foram entendidas. Ouça de novo e tente outra vez.</p>
+              )}
               {result.heard && <p className="mt-1 text-sm opacity-80">Você disse: “{result.heard}”</p>}
               {exercise.tip && (
                 <p className="mt-1 flex items-start gap-1.5 text-sm opacity-90">
@@ -468,9 +500,14 @@ export default function LessonPage() {
             <button onClick={next} className={`btn ${result.correct ? "btn-ok" : "btn-bad"} sm:min-w-40`}>
               Continuar
             </button>
-          ) : exercise.type === "speak" ? null : (
+          ) : (
             <button onClick={() => check()} disabled={!canCheck} className="btn btn-primary sm:min-w-40">
               Verificar
+            </button>
+          )}
+          {result && !result.correct && exercise.type === "speak" && (
+            <button onClick={retrySpeaking} className="btn btn-white sm:min-w-40">
+              <MicIcon size={18} /> Tentar de novo
             </button>
           )}
         </div>

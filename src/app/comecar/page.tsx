@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LessonTopBar } from "@/components/LessonParts";
+import { GoalChart } from "@/components/GoalChart";
 import { MapIcon } from "@/components/Icons";
 import { Mascot, MascotSays } from "@/components/Mascot";
 import { Stamp } from "@/components/Stamp";
@@ -84,6 +85,11 @@ export default function OnboardingPage() {
                 </button>
               ))}
             </div>
+            {goal && (
+              <div className="mt-6">
+                <GoalChart selectedXp={goal} onSelect={setGoal} />
+              </div>
+            )}
           </>
         )}
 

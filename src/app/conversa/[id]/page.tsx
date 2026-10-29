@@ -93,6 +93,8 @@ export default function ConversationPage() {
   const [error, setError] = useState<string | null>(null);
   const [fatal, setFatal] = useState<string | null>(null);
   const [showHints, setShowHints] = useState(false);
+  // O texto ditado fica no campo para o aluno conferir antes de enviar.
+  const [voiceDraft, setVoiceDraft] = useState(false);
   const [stage, setStage] = useState<"chat" | "report" | "done">("chat");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [reportError, setReportError] = useState(false);
@@ -189,6 +191,7 @@ export default function ConversationPage() {
     const clean = text.trim();
     if (!clean || waiting || lessonOver) return;
     setInput("");
+    setVoiceDraft(false);
     void send(clean);
   };
 
@@ -369,7 +372,17 @@ export default function ConversationPage() {
                 </div>
               )}
               {speech.listening && (
-                <p className="mb-3 text-center text-muted">{speech.interim ? `“${speech.interim}”` : "Pode falar, estou ouvindo…"}</p>
+                <div className="mb-3 rounded-2xl border border-dashed border-sun-500 bg-white px-4 py-3 text-center">
+                  <p className="text-lg font-semibold text-brand-500">
+                    {speech.transcript ? `“${speech.transcript}”` : "Pode falar, sem pressa…"}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">Pode fazer pausas. Toque no quadrado quando terminar a frase.</p>
+                </div>
+              )}
+              {voiceDraft && !speech.listening && input.trim() && (
+                <p className="mb-2 text-center text-xs text-muted">
+                  Confira o que eu entendi. Corrija se precisar e toque em enviar, ou fale de novo.
+                </p>
               )}
               <div className="flex items-center gap-3">
                 <button
@@ -390,7 +403,10 @@ export default function ConversationPage() {
                 >
                   <input
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => {
+                      setInput(e.target.value);
+                      if (!e.target.value) setVoiceDraft(false);
+                    }}
                     disabled={waiting || speech.listening}
                     placeholder={speech.supported ? "Fale ou digite em inglês…" : "Digite em inglês…"}
                     className="min-w-0 flex-1 rounded-full border border-line bg-white px-4 py-3 outline-none focus:border-brand-300"
@@ -401,9 +417,17 @@ export default function ConversationPage() {
                     </button>
                   )}
                 </form>
-                {speech.supported && !input.trim() && (
+                {speech.supported && (!input.trim() || voiceDraft) && (
                   <button
-                    onClick={() => (speech.listening ? speech.stop() : speech.start(submit))}
+                    onClick={() => {
+                      if (speech.listening) return speech.stop();
+                      setInput("");
+                      speech.start((text) => {
+                        if (!text) return;
+                        setInput(text);
+                        setVoiceDraft(true);
+                      });
+                    }}
                     disabled={waiting}
                     aria-label={speech.listening ? "Parar de gravar" : "Falar"}
                     className={`grid h-14 w-14 shrink-0 place-items-center rounded-full bg-sun-500 text-ink shadow-[0_6px_16px_rgba(255,122,69,0.35)] transition-transform active:scale-95 hover:bg-sun-600 disabled:opacity-50 ${
