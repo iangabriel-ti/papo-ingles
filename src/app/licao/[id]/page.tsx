@@ -486,6 +486,11 @@ export default function LessonPage() {
               {!result.correct && exercise.type === "speak" && (
                 <p className="mt-1 text-sm opacity-90">As palavras sublinhadas não foram entendidas. Ouça de novo e tente outra vez.</p>
               )}
+              {result.correct &&
+                exercise.type === "speak" &&
+                compareSpeech(exercise.sentence_en, result.heard ?? "", normalizeSentence).score < 1 && (
+                  <p className="mt-1 text-sm opacity-90">Quase perfeito! Capriche nas palavras sublinhadas.</p>
+                )}
               {result.heard && <p className="mt-1 text-sm opacity-80">Você disse: “{result.heard}”</p>}
               {exercise.tip && (
                 <p className="mt-1 flex items-start gap-1.5 text-sm opacity-90">
