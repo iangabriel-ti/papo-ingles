@@ -7,6 +7,9 @@ export const SUPABASE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISH
 
 export const authEnabled = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
 
+// O botão "Continuar com o Google" só aparece depois que o Google é ativado no Supabase.
+export const googleLoginEnabled = process.env.NEXT_PUBLIC_GOOGLE_LOGIN === "true";
+
 export const demoModeAllowed = !authEnabled && process.env.NODE_ENV !== "production";
 
 export function siteUrl(request?: Request) {

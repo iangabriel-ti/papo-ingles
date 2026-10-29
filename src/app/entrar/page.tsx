@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { CloseIcon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
+import { googleLoginEnabled } from "@/lib/env";
 import { loadProgress } from "@/lib/progress";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 
@@ -168,7 +169,7 @@ function LoginForm() {
         </button>
       </form>
 
-      {mode !== "forgot" && (
+      {mode !== "forgot" && googleLoginEnabled && (
         <>
           <div className="my-6 flex items-center gap-3 text-xs font-bold uppercase text-muted">
             <span className="h-0.5 flex-1 bg-line" /> ou <span className="h-0.5 flex-1 bg-line" />

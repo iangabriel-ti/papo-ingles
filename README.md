@@ -25,7 +25,7 @@ App web para aprender inglês do A1 ao C1 viajando pelo mundo: lições rápidas
 3. Em **Authentication → URL Configuration**:
    - **Site URL**: o endereço do seu site (ex.: `https://papo.vercel.app`).
    - **Redirect URLs**: adicione `https://SEU-SITE/auth/callback` e `http://localhost:3000/auth/callback`.
-4. Login com Google (opcional): em **Authentication → Sign In / Providers → Google**, siga as instruções da tela para criar as credenciais no Google Cloud.
+4. Login com Google (opcional): em **Authentication → Sign In / Providers → Google**, siga as instruções da tela para criar as credenciais no Google Cloud. Depois coloque `NEXT_PUBLIC_GOOGLE_LOGIN=true` na Vercel para o botão aparecer.
 5. Em **Project Settings → API Keys**, copie a URL do projeto, a chave *publishable* e a chave *secret*.
 
 Os e-mails de confirmação e de nova senha podem ser traduzidos em **Authentication → Emails**.
