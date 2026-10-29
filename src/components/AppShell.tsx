@@ -20,7 +20,7 @@ export function Logo({ small = false }: { small?: boolean }) {
   return (
     <span className="flex items-center gap-2">
       <Mascot size={small ? 32 : 40} />
-      <span className={`font-display font-bold tracking-tight text-brand-500 ${small ? "text-xl" : "text-2xl"}`}>
+      <span className={`font-display font-extrabold tracking-tight text-brand-500 ${small ? "text-xl" : "text-2xl"}`}>
         {APP_NAME.toLowerCase()}
         <span className="text-sun-500">.</span>
       </span>
@@ -81,7 +81,7 @@ function SuperCard() {
   return (
     <div className="overflow-hidden rounded-3xl bg-brand-500 p-5 text-paper">
       <p className="text-xs font-semibold uppercase tracking-widest text-gold">Papo Super</p>
-      <p className="mt-1 font-display text-xl font-bold leading-snug">Viaje sem limites com o Kiko</p>
+      <p className="mt-1 font-display text-xl font-extrabold leading-snug">Viaje sem limites com o Kiko</p>
       <p className="mt-1 text-sm text-brand-100">Lições ilimitadas e conversa livre. 7 dias grátis.</p>
       <Link href="/planos" className="btn btn-primary mt-4 w-full">
         Experimentar

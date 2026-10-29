@@ -80,7 +80,7 @@ const TONES: Record<StatTone, string> = {
 export function StatTile({ label, value, tone }: { label: string; value: string; tone: StatTone }) {
   return (
     <div className="animate-pop card px-2 py-4 text-center">
-      <p className={`font-display text-2xl font-bold ${TONES[tone]}`}>{value}</p>
+      <p className={`font-display text-2xl font-extrabold ${TONES[tone]}`}>{value}</p>
       <p className="mt-1 text-xs font-medium text-muted">{label}</p>
     </div>
   );

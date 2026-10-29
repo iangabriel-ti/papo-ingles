@@ -26,7 +26,7 @@ function StepChip({ node, status, blocked }: { node: PathNode; status: NodeStatu
     unlocked: "border-line bg-white text-brand-500 hover:border-brand-200",
     locked: "border-transparent bg-sand text-[#6b6455]",
   };
-  const className = `inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors ${styles[status]}`;
+  const className = `inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-bold transition-colors ${styles[status]}`;
 
   if (status === "locked") {
     return (
@@ -71,7 +71,7 @@ export default function TravelPage() {
           {next ? (
             <>
               <p className="text-xs font-semibold uppercase tracking-widest text-gold">Próxima parada</p>
-              <p className="mt-1 font-display text-xl font-bold leading-tight">
+              <p className="mt-1 font-display text-xl font-extrabold leading-tight">
                 {next.unit.city} · {next.scenario.title}
               </p>
               <p className="mt-0.5 text-sm text-brand-100">{next.kind === "conversation" ? "Conversa por voz" : "Lição rápida"}</p>
@@ -82,7 +82,7 @@ export default function TravelPage() {
           ) : (
             <>
               <p className="text-xs font-semibold uppercase tracking-widest text-gold">Viagem completa</p>
-              <p className="mt-1 font-display text-xl font-bold leading-tight">Você carimbou o passaporte inteiro!</p>
+              <p className="mt-1 font-display text-xl font-extrabold leading-tight">Você carimbou o passaporte inteiro!</p>
             </>
           )}
         </div>
@@ -122,7 +122,7 @@ export default function TravelPage() {
               <div className="flex items-center gap-4 p-4">
                 <Stamp code={unit.code} state={cityState} size={52} />
                 <div className="min-w-0 flex-1">
-                  <p className={`font-display text-lg font-bold ${cityState === "locked" ? "text-[#6b6455]" : "text-brand-500"}`}>
+                  <p className={`font-display text-lg font-extrabold ${cityState === "locked" ? "text-[#6b6455]" : "text-brand-500"}`}>
                     {unit.city}
                   </p>
                   <p className="text-sm text-muted">
@@ -171,7 +171,7 @@ export default function TravelPage() {
                           {!last && <span className={`mt-1 w-0.5 flex-1 ${stopDone ? "route-line" : "route-line-muted"}`} />}
                         </div>
                         <div className="min-w-0 flex-1 pb-4">
-                          <p className={`font-semibold ${stopLocked ? "text-[#6b6455]" : ""}`}>{scenario.title}</p>
+                          <p className={`font-bold ${stopLocked ? "text-[#6b6455]" : ""}`}>{scenario.title}</p>
                           <p className="text-sm text-muted">{scenario.description}</p>
                           <div className="mt-2.5 flex flex-wrap gap-2">
                             <StepChip node={lesson} status={lessonStatus} blocked={blocked} />

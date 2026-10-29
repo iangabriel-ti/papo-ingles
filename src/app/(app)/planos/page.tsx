@@ -15,7 +15,7 @@ export default function PlansPage() {
           <Mascot hat size={96} mood="celebrate" className="shrink-0" />
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-gold">Papo Super</p>
-            <h1 className="font-display text-2xl font-bold leading-tight">
+            <h1 className="font-display text-2xl font-extrabold leading-tight">
               {outOfLessons ? "Suas lições grátis de hoje acabaram" : "Viaje sem limites"}
             </h1>
             <p className="mt-1 text-sm text-brand-100">

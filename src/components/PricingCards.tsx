@@ -91,9 +91,9 @@ export function PricingCards({ startHref = "/aprender" }: { startHref?: string }
                 Mais escolhido
               </span>
             )}
-            <h3 className="font-display text-lg font-bold text-brand-500">{plan.name}</h3>
+            <h3 className="font-display text-lg font-extrabold text-brand-500">{plan.name}</h3>
             <p className="mt-3">
-              <span className="font-display text-3xl font-bold">{plan.price}</span>{" "}
+              <span className="font-display text-3xl font-extrabold">{plan.price}</span>{" "}
               <span className="text-sm font-semibold text-muted">{plan.period}</span>
             </p>
             <ul className="mt-5 flex-1 space-y-2 text-sm font-semibold">

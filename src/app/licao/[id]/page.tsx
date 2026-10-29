@@ -149,7 +149,7 @@ function ExerciseView({
         <div className="space-y-8">
           <div className="flex items-center gap-4">
             <SpeakerButton text={exercise.sentence_en} size="sm" />
-            <p className="font-display text-2xl font-semibold text-brand-500">{exercise.sentence_en}</p>
+            <p className="font-display text-2xl font-bold text-brand-500">{exercise.sentence_en}</p>
           </div>
           <Options options={exercise.options} selected={selected} onSelect={choose} disabled={locked} />
         </div>
@@ -160,7 +160,7 @@ function ExerciseView({
       const filled = selected !== null ? exercise.options[selected] : null;
       return (
         <div className="space-y-8">
-          <p className="font-display text-2xl font-semibold leading-relaxed text-brand-500">
+          <p className="font-display text-2xl font-bold leading-relaxed text-brand-500">
             {before}
             <span className={`mx-1 inline-block min-w-20 border-b-[3px] border-dashed px-1 text-center ${filled ? "border-sun-500 text-sun-700" : "border-brand-200"}`}>
               {filled ?? " "}
@@ -227,7 +227,7 @@ function ExerciseView({
             <span className="flex items-center gap-3">
               <SpeakerButton text={exercise.sentence_en} size="sm" />
               <span>
-                <span className="block font-display text-lg font-semibold text-brand-500">{exercise.sentence_en}</span>
+                <span className="block font-display text-lg font-bold text-brand-500">{exercise.sentence_en}</span>
                 <span className="block text-sm text-muted">{exercise.translation_pt}</span>
               </span>
             </span>
@@ -447,7 +447,7 @@ export default function LessonPage() {
         <div className="mx-auto flex max-w-xl flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
           {result ? (
             <div className={result.correct ? "text-ok-dark" : "text-bad-dark"}>
-              <p className="flex items-center gap-2 font-display text-xl font-bold">
+              <p className="flex items-center gap-2 font-display text-xl font-extrabold">
                 <span className="grid h-8 w-8 place-items-center rounded-full bg-white">
                   {result.correct ? <CheckIcon size={18} /> : <CloseIcon size={18} />}
                 </span>

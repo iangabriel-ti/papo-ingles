@@ -58,7 +58,7 @@ export default function ProfilePage() {
           </div>
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-widest text-gold">Passaporte Papo</p>
-            <h1 className="truncate font-display text-2xl font-bold">{progress.name || "Viajante"}</h1>
+            <h1 className="truncate font-display text-2xl font-extrabold">{progress.name || "Viajante"}</h1>
             <p className="text-sm text-brand-100">
               Nível {level} · {LEVEL_INFO[level].name} · {progress.plan === "premium" ? "Super" : "Plano grátis"}
             </p>
@@ -72,7 +72,7 @@ export default function ProfilePage() {
             { value: progress.vocabulary.length, label: "palavras" },
           ].map((s) => (
             <div key={s.label} className="px-2 py-3">
-              <p className="font-display text-xl font-bold">{s.value}</p>
+              <p className="font-display text-xl font-extrabold">{s.value}</p>
               <p className="text-xs text-brand-100">{s.label}</p>
             </div>
           ))}

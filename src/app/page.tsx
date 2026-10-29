@@ -85,12 +85,12 @@ export default function Home() {
             </div>
             <div className="flex items-end justify-between px-6 pt-4">
               <div>
-                <p className="font-display text-4xl font-bold">GRU</p>
+                <p className="font-display text-4xl font-extrabold">GRU</p>
                 <p className="text-xs text-brand-100">São Paulo</p>
               </div>
               <span className="mb-3 h-0 flex-1 border-t-2 border-dashed border-brand-300 mx-4" />
               <div className="text-right">
-                <p className="font-display text-4xl font-bold">NYC</p>
+                <p className="font-display text-4xl font-extrabold">NYC</p>
                 <p className="text-xs text-brand-100">Nova York</p>
               </div>
             </div>
@@ -116,7 +116,7 @@ export default function Home() {
                 <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-500 text-paper">
                   <Icon size={24} />
                 </span>
-                <h3 className="mt-4 font-display text-lg font-bold text-brand-500">{title}</h3>
+                <h3 className="mt-4 font-display text-lg font-extrabold text-brand-500">{title}</h3>
                 <p className="mt-2 text-sm text-muted">{text}</p>
               </div>
             ))}
@@ -162,7 +162,7 @@ export default function Home() {
             {UNITS.map((unit) => (
               <li key={unit.level} className="card flex flex-col items-center bg-paper p-5 text-center">
                 <Stamp code={unit.code} state="done" size={64} />
-                <p className="mt-4 font-display text-lg font-bold text-brand-500">{unit.city}</p>
+                <p className="mt-4 font-display text-lg font-extrabold text-brand-500">{unit.city}</p>
                 <p className="text-xs font-semibold uppercase tracking-widest text-sun-700">
                   {unit.level} · {LEVEL_INFO[unit.level].name}
                 </p>
@@ -200,7 +200,7 @@ export default function Home() {
 
       <section className="bg-brand-500 py-16 text-center text-paper">
         <Mascot hat size={110} mood="celebrate" className="mx-auto" />
-        <h2 className="mt-4 px-4 font-display text-3xl font-bold">Bora embarcar?</h2>
+        <h2 className="mt-4 px-4 font-display text-3xl font-extrabold">Bora embarcar?</h2>
         <Link href={startHref} className="btn btn-primary mt-8 px-10 py-4 text-base">
           Começar agora
         </Link>

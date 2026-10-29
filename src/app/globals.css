@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-/* Tema "Passaporte": creme de papel, azul petróleo e laranja pôr do sol. */
+/* Tema "Passaporte": creme de papel, azul petróleo e laranja pôr do sol, com a fonte Nunito. */
 @theme inline {
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-nunito);
+  --font-display: var(--font-nunito);
   --color-brand-50: #e3eef5;
   --color-brand-100: #d3e4ef;
   --color-brand-200: #b5d0e2;
@@ -42,7 +42,7 @@ body {
 
 @layer components {
   .btn {
-    @apply inline-flex select-none items-center justify-center gap-2 rounded-full border px-6 py-3 text-[15px] font-semibold transition-[transform,background-color,box-shadow] duration-100 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-full border px-6 py-3 text-[15px] font-bold transition-[transform,background-color,box-shadow] duration-100 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-primary {
     @apply border-transparent bg-sun-500 text-ink shadow-[0_6px_16px_rgba(255,122,69,0.30)] hover:bg-sun-600;
@@ -66,19 +66,19 @@ body {
     @apply rounded-3xl border border-line bg-white;
   }
   .option {
-    @apply w-full rounded-2xl border-[1.5px] border-line bg-white px-4 py-3.5 text-left font-medium transition-colors hover:border-brand-200 hover:bg-brand-50/40 active:scale-[0.99];
+    @apply w-full rounded-2xl border-[1.5px] border-line bg-white px-4 py-3.5 text-left font-semibold transition-colors hover:border-brand-200 hover:bg-brand-50/40 active:scale-[0.99];
   }
   .option-selected {
     @apply border-brand-500 bg-brand-50 text-brand-600 hover:border-brand-500 hover:bg-brand-50;
   }
   .tile {
-    @apply rounded-xl border-[1.5px] border-line bg-white px-3.5 py-2 font-medium shadow-[0_2px_0_var(--color-line)] active:translate-y-[1px] active:shadow-none;
+    @apply rounded-xl border-[1.5px] border-line bg-white px-3.5 py-2 font-semibold shadow-[0_2px_0_var(--color-line)] active:translate-y-[1px] active:shadow-none;
   }
   .stamp {
     @apply flex items-center justify-center rounded-full border-2 border-dashed font-display font-bold;
   }
   .heading {
-    @apply font-display font-bold tracking-tight text-brand-500;
+    @apply font-display font-extrabold tracking-tight text-brand-500;
   }
 }
 

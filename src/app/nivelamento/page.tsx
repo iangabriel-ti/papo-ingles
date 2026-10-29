@@ -55,13 +55,13 @@ export default function PlacementPage() {
           <Mascot hat mood="celebrate" size={150} className="animate-bob mx-auto" />
           <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-sun-700">Seu nível</p>
           <h1 className="heading mt-1 text-5xl">{result}</h1>
-          <p className="mt-1 font-display text-2xl font-semibold text-brand-500">{LEVEL_INFO[result].name}</p>
+          <p className="mt-1 font-display text-2xl font-bold text-brand-500">{LEVEL_INFO[result].name}</p>
           <p className="mt-3 text-muted">{LEVEL_INFO[result].description}</p>
           <div className="card mt-8 flex items-center gap-4 p-5 text-left">
             <Stamp code={unit.code} state="current" size={56} />
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-sun-700">Primeiro destino</p>
-              <p className="font-display text-xl font-bold text-brand-500">{unit.city}</p>
+              <p className="font-display text-xl font-extrabold text-brand-500">{unit.city}</p>
               <p className="mt-1 text-sm text-muted">As cidades anteriores ficam liberadas para você revisar quando quiser.</p>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function PlacementPage() {
         <div className="mt-4">
           <MascotSays size={80}>{question.prompt}</MascotSays>
         </div>
-        {question.sentence && <p className="mt-6 font-display text-2xl font-semibold text-brand-500">{question.sentence}</p>}
+        {question.sentence && <p className="mt-6 font-display text-2xl font-bold text-brand-500">{question.sentence}</p>}
         <div className="mt-8 grid gap-3">
           {question.options.map((option, i) => (
             <button
