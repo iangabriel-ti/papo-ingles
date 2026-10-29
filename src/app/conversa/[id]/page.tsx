@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CompletionScreen, ErrorScreen, LessonTopBar } from "@/components/LessonParts";
+import { BulbIcon, CheckIcon, MicIcon, SendIcon, SpeakerIcon, StopIcon, TranslateIcon, TurtleIcon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
 import { LESSON_TURNS, XP_CONVERSATION } from "@/lib/config";
 import { explainInPortuguese, type Level } from "@/lib/levels";
 import { lessonsLeftToday, loadProgress, useProgress, withActivityCompleted, withLessonStarted } from "@/lib/progress";
-import { FREE_TALK, getScenario } from "@/lib/scenarios";
+import { FREE_TALK, getScenario, unitOf } from "@/lib/scenarios";
 import { playSound } from "@/lib/sounds";
 import { speak, stopSpeaking, useSpeechRecognition } from "@/lib/speech";
 import type { Feedback, TeacherTurn, TranscriptLine } from "@/lib/types";
@@ -19,32 +20,26 @@ type ChatItem =
   | { kind: "teacher"; turn: TeacherTurn }
   | { kind: "student"; text: string; correction?: TeacherTurn["correction"] };
 
+const chipClass =
+  "inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-500 hover:bg-brand-100";
+
 function TeacherBubble({ turn, level, speaking }: { turn: TeacherTurn; level: Level; speaking: boolean }) {
   const [showTranslation, setShowTranslation] = useState(false);
   return (
     <div className="animate-pop flex items-end gap-2">
       <Mascot size={44} mood={speaking ? "talking" : "happy"} className="shrink-0" />
-      <div className="max-w-[85%] rounded-2xl rounded-bl-md border-2 border-line bg-white px-4 py-3">
-        <p className="text-[17px] font-semibold leading-snug">{turn.reply}</p>
-        {showTranslation && <p className="mt-2 border-t-2 border-line pt-2 text-sm font-semibold text-muted">{turn.translation}</p>}
-        <div className="mt-2 flex gap-2">
-          <button
-            onClick={() => speak(turn.reply, level)}
-            className="rounded-lg bg-brand-50 px-2 py-1 text-xs font-extrabold text-brand-600 hover:bg-brand-100"
-          >
-            🔊 Ouvir
+      <div className="max-w-[85%] rounded-3xl rounded-bl-md border border-line bg-white px-4 py-3">
+        <p className="text-[17px] leading-snug">{turn.reply}</p>
+        {showTranslation && <p className="mt-2 border-t border-line pt-2 text-sm text-muted">{turn.translation}</p>}
+        <div className="mt-2.5 flex flex-wrap gap-2">
+          <button onClick={() => speak(turn.reply, level)} className={chipClass}>
+            <SpeakerIcon size={14} /> Ouvir
           </button>
-          <button
-            onClick={() => speak(turn.reply, "A1")}
-            className="rounded-lg bg-brand-50 px-2 py-1 text-xs font-extrabold text-brand-600 hover:bg-brand-100"
-          >
-            🐢 Devagar
+          <button onClick={() => speak(turn.reply, "A1")} className={chipClass}>
+            <TurtleIcon size={14} /> Devagar
           </button>
-          <button
-            onClick={() => setShowTranslation((v) => !v)}
-            className="rounded-lg bg-brand-50 px-2 py-1 text-xs font-extrabold text-brand-600 hover:bg-brand-100"
-          >
-            🇧🇷 {showTranslation ? "Ocultar" : "Traduzir"}
+          <button onClick={() => setShowTranslation((v) => !v)} className={chipClass}>
+            <TranslateIcon size={14} /> {showTranslation ? "Ocultar" : "Traduzir"}
           </button>
         </div>
       </div>
@@ -55,22 +50,26 @@ function TeacherBubble({ turn, level, speaking }: { turn: TeacherTurn; level: Le
 function StudentBubble({ text, correction, portuguese }: { text: string; correction?: TeacherTurn["correction"]; portuguese: boolean }) {
   return (
     <div className="animate-pop flex flex-col items-end gap-2">
-      <div className="max-w-[85%] rounded-2xl rounded-br-md bg-brand-500 px-4 py-3 text-[17px] font-semibold text-white">{text}</div>
+      <div className="max-w-[85%] rounded-3xl rounded-br-md bg-brand-500 px-4 py-3 text-[17px] text-paper">{text}</div>
       {correction &&
         (correction.has_issue ? (
-          <div className="max-w-[85%] rounded-2xl border-2 border-amber-300 bg-amber-50 px-4 py-3 text-sm">
-            <p className="font-black uppercase tracking-wide text-amber-600">{portuguese ? "Dica de correção" : "Better way to say it"}</p>
-            <p className="mt-1 text-base font-bold text-ink">{correction.corrected}</p>
-            <p className="mt-1 font-semibold text-muted">{correction.explanation}</p>
+          <div className="max-w-[88%] rounded-2xl border-2 border-dashed border-sun-500 bg-white px-4 py-3 text-sm">
+            <p className="text-xs font-semibold uppercase tracking-widest text-sun-700">
+              {portuguese ? "Ajuste de rota" : "Better way to say it"}
+            </p>
+            <p className="mt-1 text-base font-semibold text-ink">{correction.corrected}</p>
+            <p className="mt-1 text-muted">{correction.explanation}</p>
             <button
               onClick={() => speak(correction.corrected, "B1")}
-              className="mt-2 rounded-lg bg-white px-2 py-1 text-xs font-extrabold text-amber-600"
+              className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-sun-50 px-3 py-1.5 text-xs font-semibold text-sun-700"
             >
-              🔊 Ouvir a forma certa
+              <SpeakerIcon size={14} /> Ouvir a forma certa
             </button>
           </div>
         ) : (
-          <p className="text-sm font-extrabold text-ok-dark">✓ {portuguese ? "Perfeito!" : "Perfect!"}</p>
+          <p className="flex items-center gap-1 text-sm font-semibold text-ok-dark">
+            <CheckIcon size={16} /> {portuguese ? "Perfeito!" : "Perfect!"}
+          </p>
         ))}
     </div>
   );
@@ -239,8 +238,8 @@ export default function ConversationPage() {
     return (
       <div className="grid min-h-dvh place-items-center px-6 text-center">
         <div>
-          <Mascot mood="thinking" size={140} className="animate-bob mx-auto" />
-          <p className="mt-6 text-xl font-extrabold">Analisando sua conversa…</p>
+          <Mascot hat mood="thinking" size={140} className="animate-bob mx-auto" />
+          <p className="heading mt-6 text-2xl">Analisando sua conversa…</p>
         </div>
       </div>
     );
@@ -250,12 +249,13 @@ export default function ConversationPage() {
     const corrections = items.filter((i) => i.kind === "student" && i.correction?.has_issue).length;
     return (
       <CompletionScreen
-        title="Conversa concluída!"
+        title="Carimbo conquistado!"
+        stampCode={isFreeTalk ? undefined : unitOf(scenario.level).code}
         subtitle={feedback?.summary ?? (reportError ? "Não consegui gerar o relatório desta vez, mas seu progresso foi salvo." : undefined)}
         tiles={[
-          { label: "XP total", value: `⚡ ${XP_CONVERSATION}`, color: "border-amber-400 bg-amber-400" },
-          { label: "Nota", value: feedback ? `⭐ ${feedback.score}` : "—", color: "border-ok bg-ok" },
-          { label: "Correções", value: `✏️ ${corrections}`, color: "border-sky-400 bg-sky-400" },
+          { label: "XP ganho", value: `+${XP_CONVERSATION}`, tone: "sun" },
+          { label: "Nota", value: feedback ? String(feedback.score) : "—", tone: "ok" },
+          { label: "Ajustes", value: String(corrections), tone: "sky" },
         ]}
         primary={
           <Link href="/aprender" className="btn btn-primary">
@@ -266,31 +266,36 @@ export default function ConversationPage() {
         {feedback && (
           <div className="space-y-5">
             <div className="card p-5">
-              <p className="font-black text-ok-dark">💪 Pontos fortes</p>
-              <ul className="mt-2 space-y-1.5 font-semibold">
+              <p className="heading text-lg">Pontos fortes</p>
+              <ul className="mt-2 list-disc space-y-1.5 pl-5">
                 {feedback.strengths.map((s) => (
                   <li key={s}>• {s}</li>
                 ))}
               </ul>
             </div>
             <div className="card p-5">
-              <p className="font-black text-amber-600">🎯 Para melhorar</p>
-              <ul className="mt-2 space-y-1.5 font-semibold">
+              <p className="heading text-lg">Para melhorar</p>
+              <ul className="mt-2 list-disc space-y-1.5 pl-5">
                 {feedback.improvements.map((s) => (
                   <li key={s}>• {s}</li>
                 ))}
               </ul>
             </div>
             <div className="card p-5">
-              <p className="font-black text-brand-600">📖 Palavras novas (salvas no seu vocabulário)</p>
+              <p className="heading text-lg">Palavras novas</p>
+              <p className="text-sm text-muted">Já estão salvas em Palavras.</p>
               <ul className="mt-3 space-y-3">
                 {feedback.vocabulary.map((v) => (
                   <li key={v.term} className="flex items-start gap-3">
-                    <button onClick={() => speak(v.term, "B1")} className="mt-0.5 text-lg" aria-label={`Ouvir ${v.term}`}>
-                      🔊
+                    <button
+                      onClick={() => speak(v.term, "B1")}
+                      className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-500"
+                      aria-label={`Ouvir ${v.term}`}
+                    >
+                      <SpeakerIcon size={16} />
                     </button>
                     <span>
-                      <span className="font-extrabold">{v.term}</span> <span className="font-semibold text-muted">· {v.meaning}</span>
+                      <span className="font-semibold">{v.term}</span> <span className="text-muted">· {v.meaning}</span>
                       <span className="block text-sm italic text-muted">“{v.example}”</span>
                     </span>
                   </li>
@@ -307,14 +312,17 @@ export default function ConversationPage() {
     <div className="flex h-dvh flex-col">
       <LessonTopBar progress={isFreeTalk ? Math.min(1, studentTurns / 20) : studentTurns / LESSON_TURNS} />
       <div className="mx-auto mt-3 flex w-full max-w-2xl items-center gap-2 px-5">
-        <span className="text-xl">{scenario.emoji}</span>
-        <p className="font-extrabold">{scenario.title}</p>
-        <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-black text-brand-600">{level}</span>
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-widest text-sun-700">
+            {isFreeTalk ? "Conversa livre" : `${unitOf(scenario.level).city} · ${level}`}
+          </p>
+          <p className="heading truncate text-lg">{scenario.title}</p>
+        </div>
         <button
           onClick={() => update((p) => ({ ...p, settings: { ...p.settings, autoPlayAudio: !p.settings.autoPlayAudio } }))}
-          className="ml-auto rounded-lg px-2 py-1 text-xs font-extrabold text-muted hover:bg-black/5"
+          className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
         >
-          {progress.settings.autoPlayAudio ? "🔊 Voz ligada" : "🔇 Voz desligada"}
+          <SpeakerIcon size={14} /> {progress.settings.autoPlayAudio ? "Voz ligada" : "Voz desligada"}
         </button>
       </div>
 
@@ -330,7 +338,7 @@ export default function ConversationPage() {
           {waiting && (
             <div className="flex items-end gap-2">
               <Mascot size={44} mood="thinking" />
-              <div className="flex gap-1.5 rounded-2xl border-2 border-line bg-white px-4 py-4">
+              <div className="flex gap-1.5 rounded-3xl border border-line bg-white px-4 py-4">
                 <span className="typing-dot h-2 w-2 rounded-full bg-muted" />
                 <span className="typing-dot h-2 w-2 rounded-full bg-muted [animation-delay:0.15s]" />
                 <span className="typing-dot h-2 w-2 rounded-full bg-muted [animation-delay:0.3s]" />
@@ -341,16 +349,16 @@ export default function ConversationPage() {
         </div>
       </main>
 
-      <footer className="border-t-2 border-line bg-white">
+      <footer className="border-t border-line bg-paper">
         <div className="mx-auto w-full max-w-2xl px-5 py-4">
           {lessonOver ? (
-            <button onClick={finishLesson} className="btn btn-ok w-full py-4 text-base">
+            <button onClick={finishLesson} className="btn btn-primary w-full py-4 text-base">
               Concluir e ver meu resultado
             </button>
           ) : (
             <>
-              {error && <p className="mb-3 text-sm font-bold text-bad">{error}</p>}
-              {speech.error && <p className="mb-3 text-sm font-bold text-bad">{speech.error}</p>}
+              {error && <p className="mb-3 text-sm font-medium text-bad">{error}</p>}
+              {speech.error && <p className="mb-3 text-sm font-medium text-bad">{speech.error}</p>}
               {showHints && suggestions.length > 0 && (
                 <div className="mb-3 flex flex-wrap gap-2">
                   {suggestions.map((s) => (
@@ -361,20 +369,20 @@ export default function ConversationPage() {
                 </div>
               )}
               {speech.listening && (
-                <p className="mb-3 text-center font-semibold text-muted">{speech.interim ? `“${speech.interim}”` : "Pode falar, estou ouvindo…"}</p>
+                <p className="mb-3 text-center text-muted">{speech.interim ? `“${speech.interim}”` : "Pode falar, estou ouvindo…"}</p>
               )}
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowHints((v) => !v)}
                   disabled={waiting || suggestions.length === 0}
-                  className="btn btn-white shrink-0 px-3"
+                  className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-line bg-white text-brand-500 disabled:opacity-50"
                   aria-label="Mostrar sugestões de resposta"
                   title="Não sabe o que dizer? Veja sugestões"
                 >
-                  💡
+                  <BulbIcon size={20} />
                 </button>
                 <form
-                  className="flex flex-1 items-center gap-2"
+                  className="flex min-w-0 flex-1 items-center gap-2"
                   onSubmit={(e) => {
                     e.preventDefault();
                     submit(input);
@@ -385,11 +393,11 @@ export default function ConversationPage() {
                     onChange={(e) => setInput(e.target.value)}
                     disabled={waiting || speech.listening}
                     placeholder={speech.supported ? "Fale ou digite em inglês…" : "Digite em inglês…"}
-                    className="min-w-0 flex-1 rounded-2xl border-2 border-line bg-[#f7f7fa] px-4 py-3 font-semibold outline-none focus:border-brand-300"
+                    className="min-w-0 flex-1 rounded-full border border-line bg-white px-4 py-3 outline-none focus:border-brand-300"
                   />
                   {input.trim() && (
-                    <button type="submit" disabled={waiting} className="btn btn-primary shrink-0 px-4">
-                      ➤
+                    <button type="submit" disabled={waiting} aria-label="Enviar" className="btn btn-dark shrink-0 px-4">
+                      <SendIcon size={18} />
                     </button>
                   )}
                 </form>
@@ -398,11 +406,11 @@ export default function ConversationPage() {
                     onClick={() => (speech.listening ? speech.stop() : speech.start(submit))}
                     disabled={waiting}
                     aria-label={speech.listening ? "Parar de gravar" : "Falar"}
-                    className={`grid h-14 w-14 shrink-0 place-items-center rounded-full border-b-4 text-2xl text-white transition-transform active:translate-y-[2px] ${
-                      speech.listening ? "mic-listening border-brand-700 bg-brand-500" : "border-brand-700 bg-brand-500 hover:brightness-110"
-                    } disabled:opacity-50`}
+                    className={`grid h-14 w-14 shrink-0 place-items-center rounded-full bg-sun-500 text-ink shadow-[0_6px_16px_rgba(255,122,69,0.35)] transition-transform active:scale-95 hover:bg-sun-600 disabled:opacity-50 ${
+                      speech.listening ? "mic-listening" : ""
+                    }`}
                   >
-                    {speech.listening ? "■" : "🎤"}
+                    {speech.listening ? <StopIcon size={22} /> : <MicIcon size={24} />}
                   </button>
                 )}
               </div>

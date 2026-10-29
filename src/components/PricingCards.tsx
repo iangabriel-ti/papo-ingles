@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { formatDate, openBillingPortal, startCheckout, type CheckoutPlan } from "@/lib/billing";
-import { PLANS } from "@/lib/config";
+import { PLANS, TRIAL_DAYS } from "@/lib/config";
 import { demoModeAllowed } from "@/lib/env";
 import { useProgress } from "@/lib/progress";
 import { useAuth } from "./AuthProvider";
+import { CheckIcon, StarIcon } from "./Icons";
 
 export function PricingCards({ startHref = "/aprender" }: { startHref?: string }) {
   const { progress, update } = useProgress();
@@ -54,8 +55,10 @@ export function PricingCards({ startHref = "/aprender" }: { startHref?: string }
   if (entitlement?.premium) {
     return (
       <div className="card border-b-4 p-6 text-center">
-        <p className="text-4xl">⭐</p>
-        <p className="mt-2 text-xl font-black">Você é Super!</p>
+        <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-sun-500 text-ink">
+          <StarIcon size={28} />
+        </span>
+        <p className="heading mt-3 text-2xl">Você é Super!</p>
         <p className="mt-1 font-semibold text-muted">
           {entitlement.source === "pix"
             ? `Seu plano anual vale até ${formatDate(entitlement.premiumUntil)}.`
@@ -79,24 +82,24 @@ export function PricingCards({ startHref = "/aprender" }: { startHref?: string }
         {PLANS.map((plan) => (
           <div
             key={plan.id}
-            className={`relative flex flex-col rounded-2xl border-2 border-b-4 bg-white p-6 ${
+            className={`relative flex flex-col rounded-2xl border bg-white p-6 ${
               plan.highlight ? "border-brand-500" : "border-line"
             }`}
           >
             {plan.highlight && (
-              <span className="absolute -top-3.5 left-6 rounded-full bg-gradient-to-r from-brand-500 to-fuchsia-500 px-3 py-1 text-xs font-black uppercase text-white">
+              <span className="absolute -top-3.5 left-6 rounded-full bg-sun-500 text-ink px-3 py-1 text-xs font-bold uppercase text-white">
                 Mais escolhido
               </span>
             )}
-            <h3 className="font-black">{plan.name}</h3>
+            <h3 className="font-display text-lg font-bold text-brand-500">{plan.name}</h3>
             <p className="mt-3">
-              <span className="text-3xl font-black">{plan.price}</span>{" "}
+              <span className="font-display text-3xl font-bold">{plan.price}</span>{" "}
               <span className="text-sm font-semibold text-muted">{plan.period}</span>
             </p>
             <ul className="mt-5 flex-1 space-y-2 text-sm font-semibold">
               {plan.features.map((feature) => (
                 <li key={feature} className="flex gap-2">
-                  <span className="font-black text-ok">✓</span>
+                  <CheckIcon size={18} className="mt-0.5 shrink-0 text-ok" />
                   {feature}
                 </li>
               ))}
@@ -112,11 +115,11 @@ export function PricingCards({ startHref = "/aprender" }: { startHref?: string }
                   disabled={busy !== null}
                   className={`btn ${plan.highlight ? "btn-primary" : "btn-white"}`}
                 >
-                  {busy === `${plan.id}-card` ? "Abrindo…" : plan.id === "yearly" && billing?.pix ? "💳 Assinar no cartão" : "Assinar"}
+                  {busy === `${plan.id}-card` ? "Abrindo…" : `Testar ${TRIAL_DAYS} dias grátis`}
                 </button>
                 {plan.id === "yearly" && billing?.pix && (
                   <button onClick={() => buy("yearly", "pix")} disabled={busy !== null} className="btn btn-white">
-                    {busy === "yearly-pix" ? "Abrindo…" : "⚡ Pagar com Pix"}
+                    {busy === "yearly-pix" ? "Abrindo…" : "Pagar com Pix"}
                   </button>
                 )}
               </div>
@@ -126,13 +129,13 @@ export function PricingCards({ startHref = "/aprender" }: { startHref?: string }
       </div>
 
       <p className="mt-4 text-center text-xs font-semibold text-muted">
-        Pagamento seguro pelo Stripe. Cancele quando quiser, sem multa.
+        Pagamento seguro pelo Stripe. O teste grátis vale na primeira assinatura no cartão; cancele antes do fim e não paga nada.
       </p>
       {message && <p className="mt-4 text-center text-sm font-bold text-bad">{message}</p>}
 
       {demoNotice && demoModeAllowed && (
-        <div className="animate-pop mt-6 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5">
-          <p className="font-extrabold">Modo demonstração: o pagamento não está configurado.</p>
+        <div className="animate-pop mt-6 rounded-2xl border-2 border-sun-500 bg-sun-50 p-5">
+          <p className="font-semibold">Modo demonstração: o pagamento não está configurado.</p>
           <p className="mt-1 text-sm font-semibold text-muted">Para testar os recursos do Super, ative-os neste navegador.</p>
           <button
             onClick={() => update((p) => ({ ...p, plan: p.plan === "premium" ? "free" : "premium" }))}

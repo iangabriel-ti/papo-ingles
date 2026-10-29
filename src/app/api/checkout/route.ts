@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { entitlementOf, getCurrentUser, getProfile } from "@/lib/account";
-import { YEARLY_PRICE_CENTS } from "@/lib/config";
+import { TRIAL_DAYS, YEARLY_PRICE_CENTS } from "@/lib/config";
 import { siteUrl } from "@/lib/env";
 import { billingEnabled, getStripe, pixEnabled } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
@@ -88,6 +88,8 @@ export async function POST(request: Request) {
             ...common,
             mode: "subscription",
             allow_promotion_codes: true,
+            // Teste grátis só na primeira assinatura, para ninguém repetir o período grátis.
+            ...(profile?.stripe_subscription_id ? {} : { subscription_data: { trial_period_days: TRIAL_DAYS } }),
             line_items: [
               {
                 quantity: 1,

@@ -1,181 +1,196 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
+import { ChatIcon, CheckIcon, ChevronRightIcon, LockIcon, MicIcon, PencilIcon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
-import { XP_CONVERSATION, XP_EXERCISE_LESSON } from "@/lib/config";
+import { Stamp } from "@/components/Stamp";
 import { LEVEL_INFO } from "@/lib/levels";
-import { nodeHref, nodeStatuses, PATH, type NodeStatus, type PathNode } from "@/lib/path";
+import { currentNode, nodeHref, nodeStatuses, PATH, type NodeStatus, type PathNode } from "@/lib/path";
 import { lessonsLeftToday, useProgress } from "@/lib/progress";
-import { FREE_TALK, UNITS } from "@/lib/scenarios";
+import { FREE_TALK, lessonsOf, UNITS } from "@/lib/scenarios";
 
-// Deslocamento horizontal de cada etapa, formando o zigue-zague da trilha.
-const OFFSETS = [0, 44, 70, 44, 0, -44, -70, -44];
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
+}
 
-function NodeButton({
-  node,
-  status,
-  index,
-  selected,
-  onSelect,
-}: {
-  node: PathNode;
-  status: NodeStatus;
-  index: number;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  const { color } = node.unit;
+// Botão de uma etapa (lição ou conversa) dentro de uma parada do roteiro.
+function StepChip({ node, status, blocked }: { node: PathNode; status: NodeStatus; blocked: boolean }) {
   const isConversation = node.kind === "conversation";
-  const active = status !== "locked";
-  const colors = active
-    ? `${color.bg} ${color.border} text-white`
-    : "bg-line border-[#c9ccdb] text-[#a2a6bf]";
+  const label = isConversation ? "Conversa" : "Lição";
+  const Icon = status === "done" ? CheckIcon : status === "locked" ? LockIcon : isConversation ? MicIcon : PencilIcon;
+  const styles: Record<NodeStatus, string> = {
+    done: "border-ok/30 bg-ok-soft text-ok-dark",
+    current: "border-transparent bg-sun-500 text-ink shadow-[0_4px_12px_rgba(255,122,69,0.35)]",
+    unlocked: "border-line bg-white text-brand-500 hover:border-brand-200",
+    locked: "border-transparent bg-sand text-[#6b6455]",
+  };
+  const className = `inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors ${styles[status]}`;
 
+  if (status === "locked") {
+    return (
+      <span className={className} aria-disabled="true">
+        <Icon size={15} /> {label}
+      </span>
+    );
+  }
   return (
-    <div className="relative flex justify-center" style={{ transform: `translateX(${OFFSETS[index % OFFSETS.length]}px)` }}>
-      {status === "current" && !selected && (
-        <div className="animate-bob absolute -top-11 z-10 whitespace-nowrap rounded-xl border-2 border-line bg-white px-3 py-1.5 text-sm font-black uppercase text-brand-500">
-          Começar
-          <span className="absolute -bottom-[7px] left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 border-line bg-white" />
-        </div>
-      )}
-      <button
-        onClick={onSelect}
-        aria-label={`${isConversation ? "Conversa" : "Lição"}: ${node.scenario.title}`}
-        className={`relative grid h-[72px] w-[78px] place-items-center rounded-[50%] border-b-[7px] text-3xl transition-transform active:translate-y-[4px] active:border-b-[3px] ${colors} ${
-          status === "current" ? "ring-8 ring-black/5" : ""
-        }`}
-      >
-        <span className={active ? "" : "opacity-50 grayscale"}>
-          {status === "done" ? "✓" : isConversation ? "🎙️" : node.scenario.emoji}
-        </span>
-        {status === "done" && (
-          <span className="absolute -right-1 -top-1 grid h-7 w-7 place-items-center rounded-full border-2 border-white bg-amber-400 text-sm">
-            👑
-          </span>
-        )}
-      </button>
-    </div>
+    <Link href={blocked && status !== "done" ? "/planos" : nodeHref(node)} className={className}>
+      <Icon size={15} /> {label}
+    </Link>
   );
 }
 
-function NodePopover({ node, status, onClose }: { node: PathNode; status: NodeStatus; onClose: () => void }) {
-  const { progress } = useProgress();
-  const ref = useRef<HTMLDivElement>(null);
-  const noLessonsLeft = lessonsLeftToday(progress) === 0;
-  const isConversation = node.kind === "conversation";
-  const best = progress.completed[node.id]?.bestScore;
-
-  useEffect(() => {
-    const close = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
-    };
-    const t = setTimeout(() => document.addEventListener("click", close), 0);
-    return () => {
-      clearTimeout(t);
-      document.removeEventListener("click", close);
-    };
-  }, [onClose]);
-
-  const locked = status === "locked";
-
-  return (
-    <div ref={ref} className="animate-pop relative z-20 mx-auto mt-3 w-72">
-      <div
-        className={`rounded-2xl p-4 ${locked ? "border-2 border-line bg-[#f7f7fa]" : `${node.unit.color.bg} text-white`}`}
-      >
-        <p className="text-lg font-black">
-          {isConversation ? "Conversa: " : ""}
-          {node.scenario.title}
-        </p>
-        <p className={`mt-1 text-sm font-semibold ${locked ? "text-muted" : "text-white/90"}`}>
-          {locked
-            ? "Complete todas as etapas anteriores para liberar esta."
-            : isConversation
-              ? `Converse por voz com o Kiko. ${node.scenario.description}`
-              : `Exercícios rápidos para aprender as palavras e frases deste tema.`}
-        </p>
-        {best !== undefined && !locked && (
-          <p className="mt-2 text-xs font-extrabold uppercase opacity-90">Sua melhor nota: {best}%</p>
-        )}
-        {!locked &&
-          (noLessonsLeft ? (
-            <Link href="/planos" className="btn btn-white mt-4 w-full">
-              Sem lições grátis hoje · Ver Super
-            </Link>
-          ) : (
-            <Link href={nodeHref(node)} className="btn btn-white mt-4 w-full">
-              {status === "done" ? "Praticar de novo" : "Começar"} +{isConversation ? XP_CONVERSATION : XP_EXERCISE_LESSON} XP
-            </Link>
-          ))}
-      </div>
-    </div>
-  );
-}
-
-export default function LearnPage() {
+export default function TravelPage() {
   const { progress, loaded } = useProgress();
   const statuses = nodeStatuses(progress);
-  const [selected, setSelected] = useState<string | null>(null);
+  const next = currentNode(progress);
+  const blocked = lessonsLeftToday(progress) === 0;
+  const currentLevelIndex = next ? UNITS.findIndex((u) => u.level === next.unit.level) : UNITS.length;
 
-  // Rola a trilha até a etapa atual ao abrir a página.
+  // Rola o roteiro até a parada atual ao abrir a página.
   useEffect(() => {
-    if (loaded) document.getElementById("current-node")?.scrollIntoView({ block: "center" });
+    if (loaded) document.getElementById("current-stop")?.scrollIntoView({ block: "center" });
   }, [loaded]);
 
   return (
     <div className="px-4 pt-6">
+      <header>
+        <p className="text-sm font-medium text-muted">
+          {greeting()}
+          {progress.name ? `, ${progress.name}` : ""}
+        </p>
+        <h1 className="heading text-3xl">Sua viagem</h1>
+      </header>
+
+      {/* próxima parada */}
+      <section className="mt-5 flex items-center gap-4 rounded-3xl bg-brand-500 p-5 text-paper">
+        <Mascot hat size={84} mood={next ? "happy" : "celebrate"} className="shrink-0" />
+        <div className="min-w-0 flex-1">
+          {next ? (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-widest text-gold">Próxima parada</p>
+              <p className="mt-1 font-display text-xl font-bold leading-tight">
+                {next.unit.city} · {next.scenario.title}
+              </p>
+              <p className="mt-0.5 text-sm text-brand-100">{next.kind === "conversation" ? "Conversa por voz" : "Lição rápida"}</p>
+              <Link href={blocked ? "/planos" : nodeHref(next)} className="btn btn-primary mt-3 px-5 py-2.5">
+                {blocked ? "Lições de hoje acabaram" : "Continuar viagem"}
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-widest text-gold">Viagem completa</p>
+              <p className="mt-1 font-display text-xl font-bold leading-tight">Você carimbou o passaporte inteiro!</p>
+            </>
+          )}
+        </div>
+      </section>
+
       {progress.plan === "premium" && (
-        <Link href={`/conversa/${FREE_TALK.id}`} className="card mb-8 flex items-center gap-4 p-4 hover:bg-black/[0.02]">
-          <span className="text-3xl">{FREE_TALK.emoji}</span>
+        <Link href={`/conversa/${FREE_TALK.id}`} className="card mt-4 flex items-center gap-4 p-4 hover:bg-sand/50">
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-brand-50 text-brand-500">
+            <ChatIcon size={22} />
+          </span>
           <span className="flex-1">
-            <span className="block font-extrabold">Conversa livre</span>
+            <span className="block font-semibold">Conversa livre</span>
             <span className="block text-sm text-muted">Fale sobre qualquer assunto com o Kiko</span>
           </span>
-          <span className="rounded-full bg-gradient-to-r from-brand-500 to-fuchsia-500 px-2 py-0.5 text-xs font-black text-white">SUPER</span>
+          <ChevronRightIcon className="text-muted" />
         </Link>
       )}
 
-      {UNITS.map((unit) => {
-        const nodes = PATH.filter((n) => n.unit.level === unit.level);
-        return (
-          <section key={unit.level} className="mb-14">
-            <div className={`sticky top-[62px] z-10 rounded-2xl border-b-4 ${unit.color.bg} ${unit.color.border} px-5 py-4 text-white lg:top-4`}>
-              <p className="text-xs font-black uppercase tracking-widest opacity-80">
-                {unit.level} · {LEVEL_INFO[unit.level].name}
-              </p>
-              <h2 className="text-xl font-black">{unit.title}</h2>
-              <p className="text-sm font-semibold opacity-90">{unit.subtitle}</p>
-            </div>
+      <div className="mt-8 flex items-baseline justify-between">
+        <h2 className="heading text-xl">Roteiro</h2>
+        <span className="text-sm font-medium text-muted">
+          {Object.keys(progress.completed).length} de {PATH.length} carimbos
+        </span>
+      </div>
 
-            <div className="relative mt-14 flex flex-col gap-7">
-              {nodes.map((node, i) => {
-                const status = statuses.get(node.id) ?? "locked";
-                return (
-                  <div key={node.id} id={status === "current" ? "current-node" : undefined}>
-                    <NodeButton
-                      node={node}
-                      status={status}
-                      index={i}
-                      selected={selected === node.id}
-                      onSelect={() => setSelected(selected === node.id ? null : node.id)}
+      <div className="mt-4 space-y-4 pb-6">
+        {UNITS.map((unit, unitIndex) => {
+          const nodes = PATH.filter((n) => n.unit.level === unit.level);
+          const done = nodes.filter((n) => statuses.get(n.id) === "done").length;
+          const allDone = done === nodes.length;
+          const isCurrent = unitIndex === currentLevelIndex;
+          const reachable = nodes.some((n) => statuses.get(n.id) !== "locked");
+          const cityState = allDone ? "done" : isCurrent ? "current" : reachable ? "open" : "locked";
+
+          return (
+            <section key={unit.level} className={`card overflow-hidden ${cityState === "locked" ? "bg-white/60" : ""}`}>
+              <div className="flex items-center gap-4 p-4">
+                <Stamp code={unit.code} state={cityState} size={52} />
+                <div className="min-w-0 flex-1">
+                  <p className={`font-display text-lg font-bold ${cityState === "locked" ? "text-[#6b6455]" : "text-brand-500"}`}>
+                    {unit.city}
+                  </p>
+                  <p className="text-sm text-muted">
+                    {unit.level} · {LEVEL_INFO[unit.level].name} · {unit.title}
+                  </p>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-sand">
+                    <div
+                      className={`h-full rounded-full ${allDone ? "bg-ok" : "bg-sun-500"}`}
+                      style={{ width: `${(done / nodes.length) * 100}%` }}
                     />
-                    {selected === node.id && (
-                      <NodePopover node={node} status={status} onClose={() => setSelected(null)} />
-                    )}
                   </div>
-                );
-              })}
-              <Mascot
-                size={110}
-                mood={nodes.every((n) => statuses.get(n.id) === "done") ? "celebrate" : "happy"}
-                className="pointer-events-none absolute right-0 top-1/3 hidden opacity-90 sm:block"
-              />
-            </div>
-          </section>
-        );
-      })}
+                </div>
+                <span className="self-start text-xs font-semibold text-muted">
+                  {done}/{nodes.length}
+                </span>
+              </div>
+
+              {/* paradas da cidade: só para cidades já liberadas */}
+              {cityState !== "locked" ? (
+                <ol className="border-t border-line px-4 pb-2 pt-3">
+                  {lessonsOf(unit.level).map((scenario, i, list) => {
+                    const lesson = PATH.find((n) => n.id === `${scenario.id}:licao`)!;
+                    const talk = PATH.find((n) => n.id === `${scenario.id}:conversa`)!;
+                    const lessonStatus = statuses.get(lesson.id) ?? "locked";
+                    const talkStatus = statuses.get(talk.id) ?? "locked";
+                    const stopDone = lessonStatus === "done" && talkStatus === "done";
+                    const stopCurrent = lessonStatus === "current" || talkStatus === "current";
+                    const stopLocked = lessonStatus === "locked" && talkStatus === "locked";
+                    const last = i === list.length - 1;
+                    return (
+                      <li key={scenario.id} id={stopCurrent ? "current-stop" : undefined} className="flex gap-3">
+                        <div className="flex w-8 flex-col items-center">
+                          <span
+                            className={`mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold ${
+                              stopDone
+                                ? "bg-ok text-white"
+                                : stopCurrent
+                                  ? "bg-sun-500 text-ink"
+                                  : stopLocked
+                                    ? "bg-sand text-[#8a8270]"
+                                    : "border border-brand-200 bg-white text-brand-500"
+                            }`}
+                          >
+                            {stopDone ? <CheckIcon size={16} /> : i + 1}
+                          </span>
+                          {!last && <span className={`mt-1 w-0.5 flex-1 ${stopDone ? "route-line" : "route-line-muted"}`} />}
+                        </div>
+                        <div className="min-w-0 flex-1 pb-4">
+                          <p className={`font-semibold ${stopLocked ? "text-[#6b6455]" : ""}`}>{scenario.title}</p>
+                          <p className="text-sm text-muted">{scenario.description}</p>
+                          <div className="mt-2.5 flex flex-wrap gap-2">
+                            <StepChip node={lesson} status={lessonStatus} blocked={blocked} />
+                            <StepChip node={talk} status={talkStatus} blocked={blocked} />
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              ) : (
+                <p className="flex items-center gap-2 border-t border-line px-4 py-3 text-sm text-muted">
+                  <LockIcon size={15} /> Libera quando você completar {UNITS[unitIndex - 1]?.city ?? "a cidade anterior"}.
+                </p>
+              )}
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }

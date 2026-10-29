@@ -15,7 +15,10 @@ export const FREE_DAILY_LESSONS = 4;
 export const DAILY_AI_CALLS = { free: 60, premium: 400 };
 
 // Preços em centavos, usados no pagamento via Pix (o cartão usa os preços do Stripe).
-export const YEARLY_PRICE_CENTS = 29990;
+export const YEARLY_PRICE_CENTS = 17990;
+
+// Dias de teste grátis na primeira assinatura no cartão.
+export const TRIAL_DAYS = 7;
 
 // XP ganho em cada atividade.
 export const XP_EXERCISE_LESSON = 10;
@@ -53,26 +56,26 @@ export const PLANS: Plan[] = [
     name: "Grátis",
     price: "R$ 0",
     period: "para sempre",
-    features: [`${FREE_DAILY_LESSONS} lições por dia`, "Teste de nivelamento", "Trilha completa do A1 ao C1", "Correções em português"],
+    features: [`${FREE_DAILY_LESSONS} lições por dia`, "Teste de nivelamento", "Roteiro completo do A1 ao C1", "Correções em português"],
   },
   {
     id: "monthly",
     name: "Super Mensal",
-    price: "R$ 39,90",
+    price: "R$ 19,99",
     period: "por mês",
     highlight: true,
     features: [
+      `${TRIAL_DAYS} dias grátis para testar`,
       "Lições e conversas ilimitadas",
       "Conversa livre sobre qualquer assunto",
-      "Relatório detalhado a cada lição",
-      "Caderno de vocabulário sem limites",
+      "Relatório detalhado a cada conversa",
     ],
   },
   {
     id: "yearly",
     name: "Super Anual",
-    price: "R$ 299,90",
-    period: "por ano (≈ R$ 25/mês)",
-    features: ["Tudo do Super Mensal", "37% de desconto", "Acesso antecipado a novidades"],
+    price: "R$ 179,90",
+    period: "por ano (≈ R$ 15/mês)",
+    features: ["Tudo do Super Mensal", "Economize 25%", "Pague no cartão ou no Pix"],
   },
 ];

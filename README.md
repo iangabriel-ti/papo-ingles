@@ -1,18 +1,18 @@
 # Papo: aprenda inglês conversando
 
-App web no estilo Duolingo para aprender inglês do A1 ao C1: lições rápidas geradas por IA e conversas por voz com o Kiko, a arara professora. A IA é o Claude, da Anthropic. O login e o banco de dados usam o Supabase, e os pagamentos usam o Stripe (cartão e Pix).
+App web para aprender inglês do A1 ao C1 viajando pelo mundo: lições rápidas geradas por IA e conversas por voz com o Kiko, uma arara brasileira viajante. Cada cidade do roteiro é um nível, e cada etapa concluída vira um carimbo no passaporte. A IA é o Claude, da Anthropic. O login e o banco de dados usam o Supabase, e os pagamentos usam o Stripe (cartão e Pix).
 
 ## O que o app faz
 
 - **Onboarding e nivelamento**: motivação, meta diária e teste de 15 perguntas do A1 ao C1.
-- **Trilha**: 5 unidades e 20 temas. Cada tema tem uma **lição** (10 exercícios gerados pela IA) e uma **conversa** por voz com correção a cada frase e relatório no final.
-- **Gamificação**: XP, ofensiva, meta diária, conquistas, sons e confetes.
+- **Roteiro**: 5 cidades (Nova York, Londres, Dublin, Toronto e Sydney) e 20 paradas. Cada parada tem uma **lição** (10 exercícios gerados pela IA) e uma **conversa** por voz, com ajuste a cada frase e relatório no final.
+- **Passaporte**: carimbos por cidade, XP, ofensiva, meta diária, conquistas, sons e confetes.
 - **Vocabulário**: palavras salvas, com áudio e revisão em cartões.
 - **Contas**: cadastro com e-mail e senha ou com o Google, recuperação de senha e progresso salvo na nuvem (aparece em qualquer aparelho).
 - **Planos**:
   - Grátis: 4 lições por dia, controladas no servidor.
-  - Super Mensal: cartão, com renovação automática.
-  - Super Anual: cartão (renovação automática) ou Pix (pagamento único que vale 12 meses).
+  - Super Mensal (R$ 19,99): cartão, com renovação automática e 7 dias grátis na primeira assinatura.
+  - Super Anual (R$ 179,90): cartão (renovação automática, também com 7 dias grátis) ou Pix (pagamento único que vale 12 meses).
   - O aluno cancela ou troca o cartão sozinho pelo portal do Stripe.
 - **Proteção de custo**: as rotas da IA exigem login e têm limite diário por aluno. Se a IA falhar, a lição não é descontada.
 
@@ -34,8 +34,10 @@ Os e-mails de confirmação e de nova senha podem ser traduzidos em **Authentica
 
 1. Crie uma conta em https://stripe.com, com a empresa no Brasil.
 2. Em **Product catalog**, crie o produto **Papo Super** com dois preços recorrentes:
-   - R$ 39,90 por mês.
-   - R$ 299,90 por ano.
+   - R$ 19,99 por mês.
+   - R$ 179,90 por ano.
+
+   O teste de 7 dias grátis é aplicado pelo próprio app na primeira assinatura; não precisa configurar no preço.
 
    Copie o ID de cada preço (começa com `price_`).
 3. Para aceitar Pix: em **Settings → Payment methods**, ative o **Pix** e depois coloque `STRIPE_PIX_ENABLED=true`.
@@ -81,15 +83,15 @@ Sem as variáveis do Supabase, o app roda em **modo demonstração** (sem login,
 | O quê | Arquivo |
 |---|---|
 | Nome do app, preços exibidos, limites dos planos, XP | `src/lib/config.ts` |
-| Unidades e temas da trilha | `src/lib/scenarios.ts` |
+| Cidades e paradas do roteiro | `src/lib/scenarios.ts` |
 | Perguntas do nivelamento | `src/lib/placement.ts` |
 | Instruções da IA (professor, exercícios, relatório) | `src/lib/prompts.ts` |
 | Tabelas e regras de acesso do banco | `supabase/migrations/0001_init.sql` |
-| Modelo e esforço da IA | variáveis `CLAUDE_MODEL` e `CLAUDE_EFFORT` |
+| Modelo e esforço da IA | variáveis `CLAUDE_MODEL` e `CLAUDE_EFFORT` (padrão: Claude Haiku 5.5, esforço baixo) |
 
-Se mudar o preço anual, mude também `YEARLY_PRICE_CENTS` em `src/lib/config.ts` (usado no Pix) e o preço no Stripe.
+Se mudar os preços, mude o texto dos planos e `YEARLY_PRICE_CENTS` em `src/lib/config.ts` (usado no Pix) e os preços no Stripe. Os dias de teste grátis ficam em `TRIAL_DAYS`, no mesmo arquivo.
 
 ## Antes de lançar
 
 - **Termos de Uso e Política de Privacidade**: a LGPD exige uma política de privacidade, porque o app guarda e-mail e progresso. Vale passar por um advogado.
-- **Custo da IA**: acompanhe o gasto no console da Anthropic e ajuste `CLAUDE_MODEL` e os limites em `src/lib/config.ts`.
+- **Custo da IA**: o padrão é o Claude Haiku 5.5, que custa poucos centavos por aluno ao mês. Teste a qualidade das conversas com ele; se quiser respostas mais caprichadas, troque `CLAUDE_MODEL` por `claude-sonnet-5-5` sabendo que o custo sobe bastante. Acompanhe o gasto no console da Anthropic.

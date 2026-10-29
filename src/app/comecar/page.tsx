@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LessonTopBar } from "@/components/LessonParts";
+import { MapIcon } from "@/components/Icons";
 import { Mascot, MascotSays } from "@/components/Mascot";
+import { Stamp } from "@/components/Stamp";
 import { DAILY_GOALS, MASCOT_NAME, MOTIVATIONS } from "@/lib/config";
 import { useProgress } from "@/lib/progress";
 import { playSound } from "@/lib/sounds";
@@ -42,10 +44,10 @@ export default function OnboardingPage() {
       <main className="mx-auto w-full max-w-xl flex-1 px-5 pb-32 pt-10">
         {step === 0 && (
           <div className="pt-10 text-center">
-            <Mascot size={170} mood="talking" className="animate-bob mx-auto" />
-            <h1 className="mt-8 text-3xl font-black">Oi! Eu sou o {MASCOT_NAME}! 👋</h1>
-            <p className="mt-3 text-lg font-semibold text-muted">
-              Vou te ajudar a falar inglês de verdade, conversando comigo todos os dias. Só preciso saber algumas coisinhas antes.
+            <Mascot hat size={170} mood="talking" className="animate-bob mx-auto" />
+            <h1 className="heading mt-8 text-3xl">Oi! Eu sou o {MASCOT_NAME}.</h1>
+            <p className="mt-3 text-lg text-muted">
+              Sou a arara que vai viajar o mundo com você enquanto você aprende a falar inglês de verdade. Antes de embarcar, me conta umas coisinhas.
             </p>
           </div>
         )}
@@ -60,7 +62,6 @@ export default function OnboardingPage() {
                   onClick={() => setMotivation(m.id)}
                   className={`option flex items-center gap-3 ${motivation === m.id ? "option-selected" : ""}`}
                 >
-                  <span className="text-2xl">{m.emoji}</span>
                   {m.label}
                 </button>
               ))}
@@ -91,17 +92,19 @@ export default function OnboardingPage() {
             <MascotSays>Quanto inglês você já sabe?</MascotSays>
             <div className="mt-8 grid gap-3">
               <button onClick={() => setStart("zero")} className={`option flex items-center gap-4 py-4 ${start === "zero" ? "option-selected" : ""}`}>
-                <span className="text-3xl">🌱</span>
+                <Stamp code="NY" state="current" size={48} />
                 <span>
-                  <span className="block font-extrabold">Estou começando agora</span>
-                  <span className="block text-sm font-semibold text-muted">Começar pela Unidade 1</span>
+                  <span className="block font-semibold">Estou começando agora</span>
+                  <span className="block text-sm text-muted">Começar por Nova York (A1)</span>
                 </span>
               </button>
               <button onClick={() => setStart("test")} className={`option flex items-center gap-4 py-4 ${start === "test" ? "option-selected" : ""}`}>
-                <span className="text-3xl">🧭</span>
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-500">
+                  <MapIcon size={24} />
+                </span>
                 <span>
-                  <span className="block font-extrabold">Já sei um pouco</span>
-                  <span className="block text-sm font-semibold text-muted">Fazer o teste de nivelamento (3 min)</span>
+                  <span className="block font-semibold">Já sei um pouco</span>
+                  <span className="block text-sm text-muted">Fazer o teste de nivelamento (3 min)</span>
                 </span>
               </button>
             </div>
@@ -109,7 +112,7 @@ export default function OnboardingPage() {
         )}
       </main>
 
-      <footer className="fixed inset-x-0 bottom-0 border-t-2 border-line bg-white px-5 py-5">
+      <footer className="fixed inset-x-0 bottom-0 border-t border-line bg-paper px-5 py-5">
         <div className="mx-auto flex max-w-xl justify-end">
           <button onClick={next} disabled={!canContinue} className="btn btn-primary w-full sm:w-auto sm:min-w-44">
             Continuar

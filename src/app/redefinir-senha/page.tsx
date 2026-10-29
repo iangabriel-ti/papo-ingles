@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
   return (
     <main className="mx-auto w-full max-w-md px-5 pt-16">
       <Mascot size={96} mood="thinking" className="mx-auto" />
-      <h1 className="mt-4 text-center text-2xl font-black">Crie uma senha nova</h1>
+      <h1 className="heading mt-4 text-center text-2xl">Crie uma senha nova</h1>
       <form onSubmit={submit} className="mt-8 space-y-3">
         <input
           type="password"
@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Nova senha (mínimo 6 caracteres)"
-          className="w-full rounded-2xl border-2 border-line bg-[#f7f7fa] px-4 py-3.5 font-semibold outline-none focus:border-brand-300"
+          className="w-full rounded-2xl border border-line bg-white px-4 py-3.5 outline-none focus:border-brand-300"
         />
         {error && <p className="text-sm font-bold text-bad">{error}</p>}
         <button type="submit" disabled={busy} className="btn btn-primary w-full py-4">

@@ -39,27 +39,27 @@ export default function CheckoutSuccessPage() {
     <main className="grid min-h-dvh place-items-center px-6 text-center">
       {status === "done" && <Confetti />}
       <div className="max-w-md">
-        <Mascot size={150} mood={status === "done" ? "celebrate" : "thinking"} className="animate-bob mx-auto" />
+        <Mascot hat size={150} mood={status === "done" ? "celebrate" : "thinking"} className="animate-bob mx-auto" />
         {status === "done" ? (
           <>
-            <h1 className="mt-6 text-3xl font-black text-amber-500">Bem-vindo ao Super!</h1>
-            <p className="mt-2 font-semibold text-muted">Agora suas lições são ilimitadas e a conversa livre está liberada.</p>
+            <h1 className="heading mt-6 text-3xl">Bem-vindo ao Super!</h1>
+            <p className="mt-2 text-muted">Agora suas lições são ilimitadas e a conversa livre está liberada.</p>
           </>
         ) : status === "waiting" ? (
           <>
-            <h1 className="mt-6 text-2xl font-black">Confirmando seu pagamento…</h1>
-            <p className="mt-2 font-semibold text-muted">Isso leva só alguns segundos. Se você pagou com Pix, pode levar um pouquinho mais.</p>
+            <h1 className="heading mt-6 text-2xl">Confirmando seu pagamento…</h1>
+            <p className="mt-2 text-muted">Isso leva só alguns segundos. Se você pagou com Pix, pode levar um pouquinho mais.</p>
           </>
         ) : (
           <>
-            <h1 className="mt-6 text-2xl font-black">Ainda não recebemos a confirmação</h1>
-            <p className="mt-2 font-semibold text-muted">
+            <h1 className="heading mt-6 text-2xl">Ainda não recebemos a confirmação</h1>
+            <p className="mt-2 text-muted">
               Se você já pagou, fique tranquilo: o Super é liberado automaticamente assim que o pagamento for confirmado.
             </p>
           </>
         )}
         <Link href="/aprender" className="btn btn-primary mt-8 w-full">
-          Ir para a trilha
+          Voltar para a viagem
         </Link>
       </div>
     </main>

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { guardAiRequest, refundAiUsage } from "@/lib/account";
-import { EFFORT, FALLBACK_BETA, friendlyError, getClient, MODEL, textOf } from "@/lib/claude";
+import { EFFORT, fallbackOptions, friendlyError, getClient, MODEL, textOf } from "@/lib/claude";
 import { LEVEL_INFO } from "@/lib/levels";
 import { EXERCISES_SCHEMA, exercisesSystemPrompt } from "@/lib/prompts";
 import { getScenario } from "@/lib/scenarios";
@@ -32,8 +32,7 @@ export async function POST(request: Request) {
     const response = await client.beta.messages.create({
       model: MODEL,
       max_tokens: 16000,
-      betas: [FALLBACK_BETA],
-      fallbacks: "default",
+      ...fallbackOptions(),
       cache_control: { type: "ephemeral" },
       output_config: {
         effort: EFFORT,

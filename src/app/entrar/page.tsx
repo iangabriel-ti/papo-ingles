@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
+import { CloseIcon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
 import { loadProgress } from "@/lib/progress";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
@@ -98,7 +99,7 @@ function LoginForm() {
     return (
       <div className="text-center">
         <Mascot size={120} className="mx-auto" />
-        <p className="mt-6 text-xl font-black">Login desativado</p>
+        <p className="heading mt-6 text-xl">Login desativado</p>
         <p className="mt-2 font-semibold text-muted">
           Este servidor está em modo demonstração (o Supabase ainda não foi configurado). Seu progresso fica salvo neste navegador.
         </p>
@@ -113,10 +114,10 @@ function LoginForm() {
     return (
       <div className="text-center">
         <Mascot size={130} mood="celebrate" className="mx-auto" />
-        <p className="mt-6 text-2xl font-black">Confira seu e-mail! 📬</p>
+        <p className="heading mt-6 text-2xl">Confira seu e-mail!</p>
         <p className="mt-3 font-semibold text-muted">
           {mode === "forgot" ? "Mandamos um link para criar uma nova senha para " : "Mandamos um link de confirmação para "}
-          <span className="font-extrabold text-ink">{sentTo}</span>. Abra o e-mail e toque no link para continuar.
+          <span className="font-semibold text-ink">{sentTo}</span>. Abra o e-mail e toque no link para continuar.
         </p>
         <button onClick={() => { setSentTo(null); setMode("login"); }} className="btn btn-white mt-8 w-full">
           Voltar
@@ -133,8 +134,8 @@ function LoginForm() {
 
   return (
     <div>
-      <Mascot size={96} mood={mode === "forgot" ? "thinking" : "happy"} className="mx-auto" />
-      <h1 className="mt-4 text-center text-2xl font-black">{titles[mode]}</h1>
+      <Mascot hat size={96} mood={mode === "forgot" ? "thinking" : "happy"} className="mx-auto" />
+      <h1 className="heading mt-4 text-center text-2xl">{titles[mode]}</h1>
       {mode === "forgot" && (
         <p className="mt-2 text-center font-semibold text-muted">Digite seu e-mail e mandamos um link para criar uma senha nova.</p>
       )}
@@ -147,7 +148,7 @@ function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="E-mail"
-          className="w-full rounded-2xl border-2 border-line bg-[#f7f7fa] px-4 py-3.5 font-semibold outline-none focus:border-brand-300"
+          className="w-full rounded-2xl border border-line bg-white px-4 py-3.5 outline-none focus:border-brand-300"
         />
         {mode !== "forgot" && (
           <input
@@ -158,7 +159,7 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder={mode === "signup" ? "Crie uma senha (mínimo 6 caracteres)" : "Senha"}
-            className="w-full rounded-2xl border-2 border-line bg-[#f7f7fa] px-4 py-3.5 font-semibold outline-none focus:border-brand-300"
+            className="w-full rounded-2xl border border-line bg-white px-4 py-3.5 outline-none focus:border-brand-300"
           />
         )}
         {error && <p className="text-sm font-bold text-bad">{error}</p>}
@@ -169,10 +170,10 @@ function LoginForm() {
 
       {mode !== "forgot" && (
         <>
-          <div className="my-6 flex items-center gap-3 text-xs font-black uppercase text-muted">
+          <div className="my-6 flex items-center gap-3 text-xs font-bold uppercase text-muted">
             <span className="h-0.5 flex-1 bg-line" /> ou <span className="h-0.5 flex-1 bg-line" />
           </div>
-          <button onClick={google} className="btn btn-white w-full normal-case tracking-normal text-ink">
+          <button onClick={google} className="btn btn-white w-full text-ink">
             <GoogleIcon /> Continuar com o Google
           </button>
         </>
@@ -216,8 +217,12 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="mx-auto flex w-full max-w-md items-center px-5 pt-5">
-        <Link href="/" aria-label="Voltar ao início" className="text-2xl font-black text-[#a2a6bf] hover:text-muted">
-          ✕
+        <Link
+          href="/"
+          aria-label="Voltar ao início"
+          className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white text-muted hover:text-ink"
+        >
+          <CloseIcon size={18} />
         </Link>
       </header>
       <main className="mx-auto w-full max-w-md flex-1 px-5 pb-12 pt-4">

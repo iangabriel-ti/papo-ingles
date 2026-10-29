@@ -5,10 +5,11 @@ import { useState } from "react";
 import { Confetti } from "@/components/Confetti";
 import { LessonTopBar } from "@/components/LessonParts";
 import { Mascot, MascotSays } from "@/components/Mascot";
+import { Stamp } from "@/components/Stamp";
 import { LEVEL_INFO, LEVELS, type Level } from "@/lib/levels";
 import { levelFromAnswers, QUESTIONS } from "@/lib/placement";
 import { useProgress } from "@/lib/progress";
-import { UNITS } from "@/lib/scenarios";
+import { unitOf } from "@/lib/scenarios";
 import { playSound } from "@/lib/sounds";
 
 export default function PlacementPage() {
@@ -46,37 +47,39 @@ export default function PlacementPage() {
   };
 
   if (result) {
-    const unit = UNITS.find((u) => u.level === result)!;
+    const unit = unitOf(result);
     return (
       <div className="flex min-h-dvh flex-col">
         <Confetti />
         <main className="mx-auto w-full max-w-xl flex-1 px-5 pt-14 text-center">
-          <Mascot mood="celebrate" size={150} className="animate-bob mx-auto" />
-          <p className="mt-6 font-black uppercase tracking-widest text-muted">Seu nível</p>
-          <h1 className={`mt-1 text-5xl font-black ${unit.color.text}`}>{result}</h1>
-          <p className="mt-2 text-2xl font-extrabold">{LEVEL_INFO[result].name}</p>
-          <p className="mt-3 font-semibold text-muted">{LEVEL_INFO[result].description}</p>
-          <div className={`mt-8 rounded-2xl ${unit.color.soft} p-5 text-left`}>
-            <p className="font-extrabold">Você vai começar pela {unit.title}</p>
-            <p className="mt-1 text-sm font-semibold text-muted">
-              As unidades anteriores ficam liberadas para você revisar quando quiser.
-            </p>
+          <Mascot hat mood="celebrate" size={150} className="animate-bob mx-auto" />
+          <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-sun-700">Seu nível</p>
+          <h1 className="heading mt-1 text-5xl">{result}</h1>
+          <p className="mt-1 font-display text-2xl font-semibold text-brand-500">{LEVEL_INFO[result].name}</p>
+          <p className="mt-3 text-muted">{LEVEL_INFO[result].description}</p>
+          <div className="card mt-8 flex items-center gap-4 p-5 text-left">
+            <Stamp code={unit.code} state="current" size={56} />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-sun-700">Primeiro destino</p>
+              <p className="font-display text-xl font-bold text-brand-500">{unit.city}</p>
+              <p className="mt-1 text-sm text-muted">As cidades anteriores ficam liberadas para você revisar quando quiser.</p>
+            </div>
           </div>
-          <details className="mt-6 text-sm font-semibold text-muted">
+          <details className="mt-6 text-sm text-muted">
             <summary className="cursor-pointer">Prefere escolher outro nível?</summary>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {LEVELS.map((l) => (
                 <button key={l} onClick={() => confirm(l)} className="tile">
-                  {l} · {LEVEL_INFO[l].name}
+                  {l} · {unitOf(l).city}
                 </button>
               ))}
             </div>
           </details>
         </main>
-        <footer className="sticky bottom-0 border-t-2 border-line bg-white px-5 py-5">
+        <footer className="sticky bottom-0 border-t border-line bg-paper px-5 py-5">
           <div className="mx-auto max-w-xl">
             <button onClick={() => confirm(result)} className="btn btn-primary w-full">
-              Começar a aprender
+              Embarcar
             </button>
           </div>
         </footer>
@@ -88,11 +91,11 @@ export default function PlacementPage() {
     <div className="flex min-h-dvh flex-col">
       <LessonTopBar progress={index / QUESTIONS.length} onClose={() => router.back()} />
       <main className="mx-auto w-full max-w-xl flex-1 px-5 pb-32 pt-8">
-        <p className="text-sm font-black uppercase tracking-wide text-brand-500">Teste de nivelamento</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-sun-700">Teste de nivelamento</p>
         <div className="mt-4">
           <MascotSays size={80}>{question.prompt}</MascotSays>
         </div>
-        {question.sentence && <p className="mt-6 text-2xl font-bold">{question.sentence}</p>}
+        {question.sentence && <p className="mt-6 font-display text-2xl font-semibold text-brand-500">{question.sentence}</p>}
         <div className="mt-8 grid gap-3">
           {question.options.map((option, i) => (
             <button
@@ -100,7 +103,7 @@ export default function PlacementPage() {
               onClick={() => setSelected(i)}
               className={`option flex items-center gap-3 ${selected === i ? "option-selected" : ""}`}
             >
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 border-line text-xs font-black text-muted">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-line text-xs font-semibold text-muted">
                 {i + 1}
               </span>
               {option}
@@ -108,7 +111,7 @@ export default function PlacementPage() {
           ))}
         </div>
       </main>
-      <footer className="fixed inset-x-0 bottom-0 border-t-2 border-line bg-white px-5 py-5">
+      <footer className="fixed inset-x-0 bottom-0 border-t border-line bg-paper px-5 py-5">
         <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
           <button
             onClick={() => next(-1)}

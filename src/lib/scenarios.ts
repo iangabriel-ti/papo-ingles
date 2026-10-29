@@ -11,45 +11,26 @@ export type Scenario = {
   goal: string;
 };
 
+// Cada unidade é uma cidade do roteiro; cada etapa concluída vira um carimbo.
 export type Unit = {
   level: Level;
+  city: string;
+  code: string; // sigla do carimbo
   title: string;
   subtitle: string;
-  color: { bg: string; border: string; text: string; soft: string };
 };
 
 export const UNITS: Unit[] = [
-  {
-    level: "A1",
-    title: "Unidade 1 · Primeiros passos",
-    subtitle: "Se apresentar, pedir coisas simples e falar do dia a dia",
-    color: { bg: "bg-emerald-500", border: "border-emerald-700", text: "text-emerald-600", soft: "bg-emerald-50" },
-  },
-  {
-    level: "A2",
-    title: "Unidade 2 · Viajando",
-    subtitle: "Aeroporto, hotel, restaurante e direções",
-    color: { bg: "bg-sky-500", border: "border-sky-700", text: "text-sky-600", soft: "bg-sky-50" },
-  },
-  {
-    level: "B1",
-    title: "Unidade 3 · Contando histórias",
-    subtitle: "Experiências, planos, opiniões e imprevistos",
-    color: { bg: "bg-violet-500", border: "border-violet-700", text: "text-violet-600", soft: "bg-violet-50" },
-  },
-  {
-    level: "B2",
-    title: "Unidade 4 · Inglês no trabalho",
-    subtitle: "Entrevistas, reuniões e negociações",
-    color: { bg: "bg-amber-500", border: "border-amber-700", text: "text-amber-600", soft: "bg-amber-50" },
-  },
-  {
-    level: "C1",
-    title: "Unidade 5 · Fluência total",
-    subtitle: "Debates, apresentações e conversas sofisticadas",
-    color: { bg: "bg-rose-500", border: "border-rose-700", text: "text-rose-600", soft: "bg-rose-50" },
-  },
+  { level: "A1", city: "Nova York", code: "NY", title: "Primeiros passos", subtitle: "Se apresentar, pedir coisas simples e falar do dia a dia" },
+  { level: "A2", city: "Londres", code: "LDN", title: "Viajando", subtitle: "Aeroporto, hotel, restaurante e direções" },
+  { level: "B1", city: "Dublin", code: "DUB", title: "Contando histórias", subtitle: "Experiências, planos, opiniões e imprevistos" },
+  { level: "B2", city: "Toronto", code: "TOR", title: "Inglês no trabalho", subtitle: "Entrevistas, reuniões e negociações" },
+  { level: "C1", city: "Sydney", code: "SYD", title: "Fluência total", subtitle: "Debates, apresentações e conversas sofisticadas" },
 ];
+
+export function unitOf(level: Level) {
+  return UNITS.find((u) => u.level === level)!;
+}
 
 export const SCENARIOS: Scenario[] = [
   // A1

@@ -2,7 +2,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { guardAiRequest, refundAiUsage } from "@/lib/account";
-import { EFFORT, FALLBACK_BETA, friendlyError, getClient, MODEL, textOf } from "@/lib/claude";
+import { EFFORT, fallbackOptions, friendlyError, getClient, MODEL, textOf } from "@/lib/claude";
 import { isLevel } from "@/lib/levels";
 import { CHAT_SCHEMA, chatSystemPrompt, LAST_TURN_NOTE, START_MESSAGE } from "@/lib/prompts";
 import { FREE_TALK, getScenario } from "@/lib/scenarios";
@@ -72,8 +72,7 @@ export async function POST(request: Request) {
     const response = await client.beta.messages.create({
       model: MODEL,
       max_tokens: 16000,
-      betas: [FALLBACK_BETA],
-      fallbacks: "default",
+      ...fallbackOptions(),
       cache_control: { type: "ephemeral" },
       output_config: {
         effort: EFFORT,

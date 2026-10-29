@@ -1,15 +1,20 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-// Modelo usado nas conversas. Pode ser trocado pela variável de ambiente CLAUDE_MODEL
-// (por exemplo "claude-haiku-5-5", bem mais barato) sem mexer no código.
-export const MODEL = process.env.CLAUDE_MODEL || "claude-opus-5-5";
+// Modelo usado nas lições e conversas: o Haiku é rápido e barato o bastante para o
+// plano de R$ 19,99. Pode ser trocado pela variável de ambiente CLAUDE_MODEL
+// (por exemplo "claude-sonnet-5-5" ou "claude-opus-5-5") sem mexer no código.
+export const MODEL = process.env.CLAUDE_MODEL || "claude-haiku-5-5";
 
 // Conversa casual responde bem com esforço baixo: mais rápido e mais barato.
 export const EFFORT = (process.env.CLAUDE_EFFORT || "low") as "low" | "medium" | "high";
 
 // Se o modelo recusar um pedido por política de segurança, a API tenta de novo
-// em outro modelo automaticamente.
-export const FALLBACK_BETA = "server-side-fallback-2026-07-01";
+// em outro modelo automaticamente. O Haiku não tem essa opção.
+const FALLBACK_BETA = "server-side-fallback-2026-07-01";
+
+export function fallbackOptions(): { betas?: string[]; fallbacks?: "default" } {
+  return /^claude-(opus|sonnet|fable)-/.test(MODEL) ? { betas: [FALLBACK_BETA], fallbacks: "default" } : {};
+}
 
 let client: Anthropic | null = null;
 

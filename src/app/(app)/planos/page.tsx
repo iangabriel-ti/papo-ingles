@@ -10,18 +10,18 @@ export default function PlansPage() {
 
   return (
     <div className="px-4 pt-6">
-      <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-brand-500 to-fuchsia-500 p-6 text-white">
+      <div className="overflow-hidden rounded-3xl bg-brand-500 p-6 text-paper">
         <div className="flex items-center gap-4">
-          <Mascot size={96} mood="celebrate" className="shrink-0" />
+          <Mascot hat size={96} mood="celebrate" className="shrink-0" />
           <div>
-            <p className="text-xs font-black uppercase tracking-widest opacity-80">Papo Super</p>
-            <h1 className="text-2xl font-black leading-tight">
-              {outOfLessons ? "Suas lições grátis de hoje acabaram" : "Aprenda sem limites"}
+            <p className="text-xs font-semibold uppercase tracking-widest text-gold">Papo Super</p>
+            <h1 className="font-display text-2xl font-bold leading-tight">
+              {outOfLessons ? "Suas lições grátis de hoje acabaram" : "Viaje sem limites"}
             </h1>
-            <p className="mt-1 text-sm font-semibold opacity-90">
+            <p className="mt-1 text-sm text-brand-100">
               {outOfLessons
                 ? "Volte amanhã ou assine o Super para continuar agora mesmo."
-                : "Lições ilimitadas, conversa livre e relatórios completos."}
+                : "Lições ilimitadas, conversa livre e 7 dias grátis para testar."}
             </p>
           </div>
         </div>

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { SpeakerIcon } from "@/components/Icons";
 import { MascotSays } from "@/components/Mascot";
+import { Stamp } from "@/components/Stamp";
 import { useProgress } from "@/lib/progress";
 import { playSound } from "@/lib/sounds";
 import { speak } from "@/lib/speech";
@@ -17,8 +19,8 @@ function Flashcards({ onClose }: { onClose: () => void }) {
   if (index >= deck.length) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-4xl">🎉</p>
-        <p className="mt-3 text-xl font-black">Revisão concluída!</p>
+        <Stamp code="OK" state="done" size={64} className="mx-auto" />
+        <p className="mt-3 text-xl font-bold">Revisão concluída!</p>
         <p className="mt-1 font-semibold text-muted">
           Você lembrou de {known} de {deck.length} palavras.
         </p>
@@ -39,7 +41,7 @@ function Flashcards({ onClose }: { onClose: () => void }) {
 
   return (
     <div>
-      <p className="mb-3 text-sm font-black uppercase text-muted">
+      <p className="mb-3 text-sm font-bold uppercase text-muted">
         Cartão {index + 1} de {deck.length}
       </p>
       <button
@@ -50,7 +52,7 @@ function Flashcards({ onClose }: { onClose: () => void }) {
         className="card grid min-h-56 w-full place-items-center border-b-4 p-6 text-center"
       >
         <span>
-          <span className="block text-3xl font-black">{card.term}</span>
+          <span className="block text-3xl font-bold">{card.term}</span>
           {revealed ? (
             <span className="animate-pop mt-4 block">
               <span className="block text-lg font-bold text-brand-600">{card.meaning}</span>
@@ -85,14 +87,14 @@ export default function VocabularyPage() {
 
   return (
     <div className="px-4 pt-6">
-      <h1 className="text-2xl font-black">Vocabulário</h1>
+      <h1 className="heading text-3xl">Palavras</h1>
       <p className="mt-1 font-semibold text-muted">Palavras e expressões que você aprendeu nas conversas.</p>
 
       {progress.vocabulary.length === 0 ? (
         <div className="mt-10">
           <MascotSays mood="happy">Termine uma conversa e eu guardo aqui as palavras novas para você revisar!</MascotSays>
           <Link href="/aprender" className="btn btn-primary mt-8 w-full">
-            Ir para a trilha
+            Voltar para a viagem
           </Link>
         </div>
       ) : reviewing ? (
@@ -102,23 +104,23 @@ export default function VocabularyPage() {
       ) : (
         <>
           <button onClick={() => setReviewing(true)} className="btn btn-primary mt-6 w-full">
-            🃏 Revisar com cartões
+            Revisar com cartões
           </button>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar palavra…"
-            className="mt-6 w-full rounded-2xl border-2 border-line bg-[#f7f7fa] px-4 py-3 font-semibold outline-none focus:border-brand-300"
+            className="mt-6 w-full rounded-2xl border border-line bg-white px-4 py-3 font-semibold outline-none focus:border-brand-300"
           />
-          <p className="mt-4 text-sm font-black uppercase text-muted">{progress.vocabulary.length} palavras</p>
-          <ul className="card mt-2 divide-y-2 divide-line">
+          <p className="mt-4 text-sm font-bold uppercase text-muted">{progress.vocabulary.length} palavras</p>
+          <ul className="card mt-2 divide-y divide-line">
             {words.map((v) => (
               <li key={v.term} className="flex items-start gap-3 p-4">
-                <button onClick={() => speak(v.term, "B1")} className="text-xl" aria-label={`Ouvir ${v.term}`}>
-                  🔊
+                <button onClick={() => speak(v.term, "B1")} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-500" aria-label={`Ouvir ${v.term}`}>
+                  <SpeakerIcon size={16} />
                 </button>
                 <span>
-                  <span className="font-extrabold">{v.term}</span>
+                  <span className="font-semibold">{v.term}</span>
                   <span className="font-semibold text-muted"> · {v.meaning}</span>
                   <span className="block text-sm italic text-muted">“{v.example}”</span>
                 </span>

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
+import { BookIcon, ChatIcon, FlameIcon, MicIcon, PassportIcon, PencilIcon, PlaneIcon, StarIcon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
+import { Stamp } from "@/components/Stamp";
 import { formatDate, openBillingPortal } from "@/lib/billing";
 import { DAILY_GOALS } from "@/lib/config";
 import { LEVEL_INFO } from "@/lib/levels";
@@ -20,13 +22,13 @@ function achievements(p: Progress) {
   const unitsDone = UNITS.filter((u) => PATH.filter((n) => n.unit.level === u.level).every((n) => p.completed[n.id])).length;
   const bestScore = Math.max(0, ...p.sessions.filter((s) => s.kind === "conversation").map((s) => s.score ?? 0));
   return [
-    { icon: "🐣", title: "Primeiros passos", text: "Conclua sua primeira atividade", value: p.sessions.length, goal: 1 },
-    { icon: "🔥", title: "Em chamas", text: "Alcance uma ofensiva de 7 dias", value: p.bestStreak, goal: 7 },
-    { icon: "🦜", title: "Tagarela", text: "Complete 10 conversas", value: conversations, goal: 10 },
-    { icon: "📚", title: "Estudioso", text: "Complete 20 lições", value: lessons, goal: 20 },
-    { icon: "💎", title: "Colecionador", text: "Junte 50 palavras no vocabulário", value: p.vocabulary.length, goal: 50 },
-    { icon: "⭐", title: "Nota alta", text: "Tire 90 ou mais numa conversa", value: bestScore >= 90 ? 1 : 0, goal: 1 },
-    { icon: "🏆", title: "Mestre", text: "Conclua uma unidade inteira", value: unitsDone, goal: 1 },
+    { Icon: PlaneIcon, title: "Decolagem", text: "Conclua sua primeira atividade", value: p.sessions.length, goal: 1 },
+    { Icon: FlameIcon, title: "Em chamas", text: "Alcance uma ofensiva de 7 dias", value: p.bestStreak, goal: 7 },
+    { Icon: ChatIcon, title: "Tagarela", text: "Complete 10 conversas", value: conversations, goal: 10 },
+    { Icon: PencilIcon, title: "Estudioso", text: "Complete 20 lições", value: lessons, goal: 20 },
+    { Icon: BookIcon, title: "Colecionador", text: "Junte 50 palavras", value: p.vocabulary.length, goal: 50 },
+    { Icon: StarIcon, title: "Nota alta", text: "Tire 90 ou mais numa conversa", value: bestScore >= 90 ? 1 : 0, goal: 1 },
+    { Icon: PassportIcon, title: "Cidadão do mundo", text: "Complete uma cidade inteira", value: unitsDone, goal: 1 },
   ];
 }
 
@@ -48,74 +50,97 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8 px-4 pt-6">
-      <section className="flex items-center gap-5 border-b-2 border-line pb-8">
-        <div className="grid h-24 w-24 place-items-center rounded-full border-2 border-dashed border-brand-200 bg-brand-50">
-          <Mascot size={78} />
+      {/* capa do passaporte */}
+      <section className="overflow-hidden rounded-3xl bg-brand-500 text-paper">
+        <div className="flex items-center gap-4 p-5">
+          <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-brand-600">
+            <Mascot hat size={64} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gold">Passaporte Papo</p>
+            <h1 className="truncate font-display text-2xl font-bold">{progress.name || "Viajante"}</h1>
+            <p className="text-sm text-brand-100">
+              Nível {level} · {LEVEL_INFO[level].name} · {progress.plan === "premium" ? "Super" : "Plano grátis"}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-black">{progress.name || "Estudante"}</h1>
-          <p className="font-semibold text-muted">
-            Nível {level} · {LEVEL_INFO[level].name}
-          </p>
-          <p className="mt-1 text-sm font-bold text-brand-500">{progress.plan === "premium" ? "⭐ Papo Super" : "Plano grátis"}</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 className="mb-3 text-xl font-black">Estatísticas</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-4 border-t border-dashed border-brand-300/50 bg-brand-600 text-center">
           {[
-            { icon: "🔥", value: progress.streak, label: "Dias de ofensiva" },
-            { icon: "⚡", value: progress.xp, label: "Total de XP" },
-            { icon: "🏅", value: progress.bestStreak, label: "Maior ofensiva" },
-            { icon: "✅", value: progress.sessions.length, label: "Atividades concluídas" },
+            { value: progress.streak, label: "ofensiva" },
+            { value: progress.xp, label: "XP" },
+            { value: Object.keys(progress.completed).length, label: "carimbos" },
+            { value: progress.vocabulary.length, label: "palavras" },
           ].map((s) => (
-            <div key={s.label} className="card flex items-center gap-3 p-4">
-              <span className="text-2xl">{s.icon}</span>
-              <span>
-                <span className="block text-xl font-black">{s.value}</span>
-                <span className="block text-sm font-semibold text-muted">{s.label}</span>
-              </span>
+            <div key={s.label} className="px-2 py-3">
+              <p className="font-display text-xl font-bold">{s.value}</p>
+              <p className="text-xs text-brand-100">{s.label}</p>
             </div>
           ))}
         </div>
       </section>
 
+      {/* páginas de carimbos */}
       <section>
-        <h2 className="mb-3 text-xl font-black">Últimos 7 dias</h2>
+        <h2 className="heading mb-3 text-xl">Carimbos</h2>
+        <div className="card grid grid-cols-5 gap-2 p-4">
+          {UNITS.map((unit) => {
+            const nodes = PATH.filter((n) => n.unit.level === unit.level);
+            const done = nodes.filter((n) => progress.completed[n.id]).length;
+            const state = done === nodes.length ? "done" : done > 0 ? "current" : "locked";
+            return (
+              <div key={unit.level} className="flex flex-col items-center gap-1.5 text-center">
+                <Stamp code={unit.code} state={state} size={52} />
+                <span className="text-xs font-semibold">{unit.city}</span>
+                <span className="text-[11px] text-muted">
+                  {done}/{nodes.length}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="heading mb-3 text-xl">Últimos 7 dias</h2>
         <div className="card p-5">
           <div className="flex h-36 items-end justify-between gap-2">
             {week.map((d) => (
               <div key={d.day} className="flex flex-1 flex-col items-center gap-2">
                 <span className="text-xs font-bold text-muted">{d.xp || ""}</span>
                 <div
-                  className={`w-full max-w-9 rounded-t-lg ${d.xp >= progress.dailyGoal ? "bg-amber-400" : "bg-brand-300"}`}
+                  className={`w-full max-w-9 rounded-t-lg ${d.xp >= progress.dailyGoal ? "bg-sun-500" : "bg-brand-300"}`}
                   style={{ height: `${Math.max(4, (d.xp / maxXp) * 100)}px` }}
                 />
-                <span className="text-xs font-extrabold text-muted">{d.label}</span>
+                <span className="text-xs font-semibold text-muted">{d.label}</span>
               </div>
             ))}
           </div>
-          <p className="mt-3 text-sm font-semibold text-muted">Barras douradas: dias em que você bateu a meta de {progress.dailyGoal} XP.</p>
+          <p className="mt-3 text-sm text-muted">Barras laranja: dias em que você bateu a meta de {progress.dailyGoal} XP.</p>
         </div>
       </section>
 
       <section>
-        <h2 className="mb-3 text-xl font-black">Conquistas</h2>
-        <div className="card divide-y-2 divide-line">
+        <h2 className="heading mb-3 text-xl">Conquistas</h2>
+        <div className="card divide-y divide-line">
           {achievements(progress).map((a) => {
             const done = a.value >= a.goal;
             return (
               <div key={a.title} className="flex items-center gap-4 p-4">
-                <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-3xl ${done ? "bg-amber-100" : "bg-line grayscale"}`}>{a.icon}</span>
+                <span
+                  className={`grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 border-dashed ${
+                    done ? "border-ok bg-ok-soft text-ok" : "border-[#cdc3b2] bg-sand text-[#8a8270]"
+                  }`}
+                >
+                  <a.Icon size={22} />
+                </span>
                 <div className="flex-1">
-                  <p className="font-extrabold">{a.title}</p>
-                  <p className="text-sm font-semibold text-muted">{a.text}</p>
-                  <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-line">
-                    <div className="h-full rounded-full bg-amber-400" style={{ width: `${Math.min(100, (a.value / a.goal) * 100)}%` }} />
+                  <p className="font-semibold">{a.title}</p>
+                  <p className="text-sm text-muted">{a.text}</p>
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-sand">
+                    <div className="h-full rounded-full bg-sun-500" style={{ width: `${Math.min(100, (a.value / a.goal) * 100)}%` }} />
                   </div>
                 </div>
-                <span className="text-sm font-black text-muted">
+                <span className="text-sm font-bold text-muted">
                   {Math.min(a.value, a.goal)}/{a.goal}
                 </span>
               </div>
@@ -126,22 +151,24 @@ export default function ProfilePage() {
 
       {progress.sessions.length > 0 && (
         <section>
-          <h2 className="mb-3 text-xl font-black">Histórico</h2>
-          <div className="card divide-y-2 divide-line">
+          <h2 className="heading mb-3 text-xl">Histórico</h2>
+          <div className="card divide-y divide-line">
             {progress.sessions.slice(0, 10).map((s) => {
               const scenario = getScenario(s.scenarioId);
               return (
                 <div key={s.id} className="flex items-center gap-3 p-4">
-                  <span className="text-2xl">{s.kind === "conversation" ? "🎙️" : scenario?.emoji}</span>
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-500">
+                    {s.kind === "conversation" ? <MicIcon size={18} /> : <PencilIcon size={18} />}
+                  </span>
                   <span className="flex-1">
-                    <span className="block font-extrabold">
+                    <span className="block font-semibold">
                       {s.kind === "conversation" ? "Conversa" : "Lição"}: {scenario?.title}
                     </span>
                     <span className="block text-sm font-semibold text-muted">{new Date(s.date).toLocaleDateString("pt-BR")}</span>
                   </span>
-                  <span className="text-right text-sm font-black">
+                  <span className="text-right text-sm font-bold">
                     {s.score !== null && <span className="block text-ok-dark">{s.score}%</span>}
-                    <span className="block text-amber-500">+{s.xp} XP</span>
+                    <span className="block text-sun-700">+{s.xp} XP</span>
                   </span>
                 </div>
               );
@@ -152,8 +179,8 @@ export default function ProfilePage() {
 
       {auth.enabled && auth.account && (
         <section>
-          <h2 className="mb-3 text-xl font-black">Conta</h2>
-          <div className="card divide-y-2 divide-line">
+          <h2 className="heading mb-3 text-xl">Conta</h2>
+          <div className="card divide-y divide-line">
             <div className="flex items-center justify-between gap-4 p-4 font-bold">
               E-mail
               <span className="truncate font-semibold text-muted">{auth.account.user.email}</span>
@@ -194,15 +221,15 @@ export default function ProfilePage() {
       )}
 
       <section>
-        <h2 className="mb-3 text-xl font-black">Configurações</h2>
-        <div className="card divide-y-2 divide-line">
+        <h2 className="heading mb-3 text-xl">Configurações</h2>
+        <div className="card divide-y divide-line">
           <label className="flex items-center justify-between gap-4 p-4 font-bold">
             Seu nome
             <input
               value={progress.name}
               onChange={(e) => update((p) => ({ ...p, name: e.target.value.slice(0, 40) }))}
               placeholder="Como o Kiko te chama?"
-              className="w-44 rounded-xl border-2 border-line px-3 py-2 text-right font-semibold outline-none focus:border-brand-300"
+              className="w-44 rounded-xl border border-line px-3 py-2 text-right font-semibold outline-none focus:border-brand-300"
             />
           </label>
           <label className="flex items-center justify-between gap-4 p-4 font-bold">
@@ -210,7 +237,7 @@ export default function ProfilePage() {
             <select
               value={progress.dailyGoal}
               onChange={(e) => update((p) => ({ ...p, dailyGoal: Number(e.target.value) }))}
-              className="rounded-xl border-2 border-line px-3 py-2 font-semibold"
+              className="rounded-xl border border-line px-3 py-2 font-semibold"
             >
               {DAILY_GOALS.map((g) => (
                 <option key={g.xp} value={g.xp}>

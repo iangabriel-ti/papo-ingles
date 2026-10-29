@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CompletionScreen, ErrorScreen, LessonTopBar, LoadingLesson } from "@/components/LessonParts";
+import { BulbIcon, CheckIcon, CloseIcon, MicIcon, SpeakerIcon, TurtleIcon } from "@/components/Icons";
 import { MascotSays } from "@/components/Mascot";
 import { XP_EXERCISE_LESSON, XP_PERFECT_BONUS } from "@/lib/config";
 import { findNode } from "@/lib/path";
@@ -56,11 +57,11 @@ function SpeakerButton({ text, size = "lg", slow = false }: { text: string; size
     <button
       onClick={() => speak(text, slow ? "A1" : "B1")}
       aria-label={slow ? "Ouvir devagar" : "Ouvir"}
-      className={`grid shrink-0 place-items-center rounded-2xl border-b-4 border-brand-700 bg-brand-500 text-white active:translate-y-[2px] active:border-b-2 ${
-        size === "lg" ? "h-24 w-24 text-4xl" : "h-12 w-12 text-xl"
-      }`}
+      className={`grid shrink-0 place-items-center rounded-full transition-transform active:scale-95 ${
+        slow ? "border border-line bg-white text-brand-500" : "bg-brand-500 text-paper"
+      } ${size === "lg" ? "h-24 w-24" : "h-12 w-12"}`}
     >
-      {slow ? "🐢" : "🔊"}
+      {slow ? <TurtleIcon size={size === "lg" ? 36 : 22} /> : <SpeakerIcon size={size === "lg" ? 40 : 22} />}
     </button>
   );
 }
@@ -85,7 +86,7 @@ function Options({
           onClick={() => onSelect(i)}
           className={`option flex items-center gap-3 ${selected === i ? "option-selected" : ""}`}
         >
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 border-line text-xs font-black text-muted">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-line text-xs font-semibold text-muted">
             {i + 1}
           </span>
           {option}
@@ -148,7 +149,7 @@ function ExerciseView({
         <div className="space-y-8">
           <div className="flex items-center gap-4">
             <SpeakerButton text={exercise.sentence_en} size="sm" />
-            <p className="text-xl font-bold underline decoration-dotted decoration-line underline-offset-8">{exercise.sentence_en}</p>
+            <p className="font-display text-2xl font-semibold text-brand-500">{exercise.sentence_en}</p>
           </div>
           <Options options={exercise.options} selected={selected} onSelect={choose} disabled={locked} />
         </div>
@@ -159,9 +160,9 @@ function ExerciseView({
       const filled = selected !== null ? exercise.options[selected] : null;
       return (
         <div className="space-y-8">
-          <p className="text-2xl font-bold leading-relaxed">
+          <p className="font-display text-2xl font-semibold leading-relaxed text-brand-500">
             {before}
-            <span className={`mx-1 inline-block min-w-20 border-b-4 px-1 text-center ${filled ? "border-brand-300 text-brand-600" : "border-line"}`}>
+            <span className={`mx-1 inline-block min-w-20 border-b-[3px] border-dashed px-1 text-center ${filled ? "border-sun-500 text-sun-700" : "border-brand-200"}`}>
               {filled ?? " "}
             </span>
             {after}
@@ -197,7 +198,7 @@ function ExerciseView({
       return (
         <div className="space-y-6">
           <MascotSays size={86}>{exercise.translation_pt}</MascotSays>
-          <div className="flex min-h-[116px] flex-wrap content-start gap-2 border-y-2 border-line py-3">
+          <div className="flex min-h-[116px] flex-wrap content-start gap-2 border-y border-dashed border-brand-200 py-3">
             {picked.map((p) => (
               <button key={p} onClick={() => togglePick(p)} className="tile animate-pop">
                 {bank[p]}
@@ -210,7 +211,7 @@ function ExerciseView({
                 key={i}
                 onClick={() => togglePick(i)}
                 disabled={locked || picked.includes(i)}
-                className={`tile ${picked.includes(i) ? "border-line bg-line text-transparent" : ""}`}
+                className={`tile ${picked.includes(i) ? "border-sand bg-sand text-transparent shadow-none" : ""}`}
               >
                 {word}
               </button>
@@ -226,8 +227,8 @@ function ExerciseView({
             <span className="flex items-center gap-3">
               <SpeakerButton text={exercise.sentence_en} size="sm" />
               <span>
-                <span className="block text-lg">{exercise.sentence_en}</span>
-                <span className="block text-sm font-semibold text-muted">{exercise.translation_pt}</span>
+                <span className="block font-display text-lg font-semibold text-brand-500">{exercise.sentence_en}</span>
+                <span className="block text-sm text-muted">{exercise.translation_pt}</span>
               </span>
             </span>
           </MascotSays>
@@ -236,15 +237,15 @@ function ExerciseView({
               <button
                 disabled={locked}
                 onClick={() => (speech.listening ? speech.stop() : speech.start(onSpoken))}
-                className={`btn w-full max-w-sm py-5 text-base ${speech.listening ? "btn-primary mic-listening" : "btn-white"}`}
+                className={`btn w-full max-w-sm py-5 text-base ${speech.listening ? "btn-primary mic-listening" : "btn-dark"}`}
               >
-                🎤 {speech.listening ? "Ouvindo… toque para parar" : "Toque para falar"}
+                <MicIcon size={22} /> {speech.listening ? "Ouvindo… toque para parar" : "Toque para falar"}
               </button>
-              {speech.interim && <p className="mt-4 font-semibold text-muted">“{speech.interim}”</p>}
-              {speech.error && <p className="mt-4 text-sm font-semibold text-bad">{speech.error}</p>}
+              {speech.interim && <p className="mt-4 text-muted">“{speech.interim}”</p>}
+              {speech.error && <p className="mt-4 text-sm font-medium text-bad">{speech.error}</p>}
             </div>
           ) : (
-            <p className="text-center font-semibold text-muted">
+            <p className="text-center text-muted">
               Seu navegador não reconhece voz. Use o Chrome, o Edge ou o Safari para praticar a fala.
             </p>
           )}
@@ -394,24 +395,21 @@ export default function LessonPage() {
     const xp = XP_EXERCISE_LESSON + (mistakes === 0 ? XP_PERFECT_BONUS : 0);
     return (
       <CompletionScreen
-        title={mistakes === 0 ? "Lição perfeita!" : "Lição concluída!"}
+        title={mistakes === 0 ? "Lição perfeita!" : "Carimbo conquistado!"}
+        stampCode={node.unit.code}
         subtitle={`Agora use o que aprendeu numa conversa de verdade: ${scenario.title}.`}
         tiles={[
-          { label: "XP total", value: `⚡ ${xp}`, color: "border-amber-400 bg-amber-400" },
-          { label: "Precisão", value: `🎯 ${accuracy}%`, color: "border-ok bg-ok" },
-          {
-            label: "Tempo",
-            value: `⏱ ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`,
-            color: "border-sky-400 bg-sky-400",
-          },
+          { label: "XP ganho", value: `+${xp}`, tone: "sun" },
+          { label: "Precisão", value: `${accuracy}%`, tone: "ok" },
+          { label: "Tempo", value: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`, tone: "sky" },
         ]}
         primary={
           <>
             <Link href={`/conversa/${id}`} className="btn btn-primary">
-              🎙️ Praticar na conversa
+              <MicIcon size={20} /> Praticar na conversa
             </Link>
             <Link href="/aprender" className="btn btn-white">
-              Voltar para a trilha
+              Voltar para a viagem
             </Link>
           </>
         }
@@ -427,9 +425,9 @@ export default function LessonPage() {
       <LessonTopBar progress={progressValue} />
       <main className="mx-auto w-full max-w-xl flex-1 px-5 pb-48 pt-8">
         {position >= total && (
-          <p className="mb-2 text-sm font-black uppercase tracking-wide text-orange-500">↻ Erro anterior</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-sun-700">Revisando um erro</p>
         )}
-        <h1 className="mb-8 text-2xl font-black">{TITLES[exercise.type]}</h1>
+        <h1 className="heading mb-8 text-2xl">{TITLES[exercise.type]}</h1>
         <ExerciseView
           key={position}
           exercise={exercise}
@@ -442,20 +440,26 @@ export default function LessonPage() {
 
       {/* rodapé: verificar / resultado */}
       <footer
-        className={`fixed inset-x-0 bottom-0 border-t-2 ${
-          result ? (result.correct ? "animate-slide-up border-transparent bg-[#d7ffb8]" : "animate-slide-up border-transparent bg-[#ffdfe0]") : "border-line bg-white"
+        className={`fixed inset-x-0 bottom-0 border-t ${
+          result ? (result.correct ? "animate-slide-up border-transparent bg-ok-soft" : "animate-slide-up border-transparent bg-bad-soft") : "border-line bg-paper"
         }`}
       >
         <div className="mx-auto flex max-w-xl flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
           {result ? (
             <div className={result.correct ? "text-ok-dark" : "text-bad-dark"}>
-              <p className="flex items-center gap-2 text-xl font-black">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-base">{result.correct ? "✓" : "✕"}</span>
+              <p className="flex items-center gap-2 font-display text-xl font-bold">
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-white">
+                  {result.correct ? <CheckIcon size={18} /> : <CloseIcon size={18} />}
+                </span>
                 {result.correct ? ["Muito bem!", "Excelente!", "Mandou bem!", "Perfeito!"][position % 4] : "Resposta correta:"}
               </p>
-              {!result.correct && <p className="mt-1 font-bold">{result.answerLabel}</p>}
-              {result.heard && <p className="mt-1 text-sm font-semibold opacity-80">Você disse: “{result.heard}”</p>}
-              {exercise.tip && <p className="mt-1 text-sm font-semibold opacity-80">💡 {exercise.tip}</p>}
+              {!result.correct && <p className="mt-1 font-semibold">{result.answerLabel}</p>}
+              {result.heard && <p className="mt-1 text-sm opacity-80">Você disse: “{result.heard}”</p>}
+              {exercise.tip && (
+                <p className="mt-1 flex items-start gap-1.5 text-sm opacity-90">
+                  <BulbIcon size={16} className="mt-0.5 shrink-0" /> {exercise.tip}
+                </p>
+              )}
             </div>
           ) : (
             <span className="hidden sm:block" />
@@ -465,7 +469,7 @@ export default function LessonPage() {
               Continuar
             </button>
           ) : exercise.type === "speak" ? null : (
-            <button onClick={() => check()} disabled={!canCheck} className="btn btn-ok sm:min-w-40">
+            <button onClick={() => check()} disabled={!canCheck} className="btn btn-primary sm:min-w-40">
               Verificar
             </button>
           )}

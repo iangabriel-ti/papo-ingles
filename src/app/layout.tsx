@@ -1,22 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito } from "next/font/google";
+import { Fraunces, Inter } from "next/font/google";
 import { AuthProvider } from "@/components/AuthProvider";
 import { APP_NAME, APP_TAGLINE } from "@/lib/config";
 import "./globals.css";
 
-const nunito = Nunito({
-  variable: "--font-nunito",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800", "900"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} - aprenda inglês conversando`,
+  title: `${APP_NAME} - sua passagem para falar inglês`,
   description: APP_TAGLINE,
 };
 
 export const viewport: Viewport = {
-  themeColor: "#5865f2",
+  themeColor: "#0f3d5e",
 };
 
 export default function RootLayout({
@@ -26,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${nunito.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${fraunces.variable} font-sans antialiased`}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
