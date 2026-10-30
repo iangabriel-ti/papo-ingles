@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { BookIcon, ChatIcon, FlameIcon, MicIcon, PassportIcon, PencilIcon, PlaneIcon, StarIcon } from "@/components/Icons";
+import { BookIcon, ChatIcon, FlameIcon, MicIcon, PassportIcon, PencilIcon, PlaneIcon, StarIcon, TargetIcon } from "@/components/Icons";
 import { Mascot } from "@/components/Mascot";
 import { Stamp } from "@/components/Stamp";
 import { formatDate, openBillingPortal } from "@/lib/billing";
@@ -158,11 +158,11 @@ export default function ProfilePage() {
               return (
                 <div key={s.id} className="flex items-center gap-3 p-4">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-500">
-                    {s.kind === "conversation" ? <MicIcon size={18} /> : <PencilIcon size={18} />}
+                    {s.kind === "conversation" ? <MicIcon size={18} /> : s.kind === "review" ? <TargetIcon size={18} /> : <PencilIcon size={18} />}
                   </span>
                   <span className="flex-1">
                     <span className="block font-semibold">
-                      {s.kind === "conversation" ? "Conversa" : "Lição"}: {scenario?.title}
+                      {s.kind === "review" ? "Revisão do dia" : `${s.kind === "conversation" ? "Conversa" : "Lição"}: ${scenario?.title}`}
                     </span>
                     <span className="block text-sm font-semibold text-muted">{new Date(s.date).toLocaleDateString("pt-BR")}</span>
                   </span>

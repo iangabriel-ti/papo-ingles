@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { ChatIcon, CheckIcon, ChevronRightIcon, LockIcon, MicIcon, PencilIcon } from "@/components/Icons";
+import { DailyMission } from "@/components/DailyMission";
 import { Mascot } from "@/components/Mascot";
 import { Stamp } from "@/components/Stamp";
 import { LEVEL_INFO } from "@/lib/levels";
@@ -87,6 +88,8 @@ export default function TravelPage() {
           )}
         </div>
       </section>
+
+      <DailyMission progress={progress} />
 
       {progress.plan === "premium" && (
         <Link href={`/conversa/${FREE_TALK.id}`} className="card mt-4 flex items-center gap-4 p-4 hover:bg-sand/50">

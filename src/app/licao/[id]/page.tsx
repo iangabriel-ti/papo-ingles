@@ -6,9 +6,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CompletionScreen, ErrorScreen, LessonTopBar, LoadingLesson } from "@/components/LessonParts";
 import { BulbIcon, CheckIcon, CloseIcon, MicIcon, SpeakerIcon, StopIcon, TurtleIcon } from "@/components/Icons";
 import { MascotSays } from "@/components/Mascot";
-import { XP_EXERCISE_LESSON, XP_PERFECT_BONUS } from "@/lib/config";
+import { REVIEW_ID, XP_EXERCISE_LESSON, XP_PERFECT_BONUS, XP_REVIEW } from "@/lib/config";
 import { findNode } from "@/lib/path";
-import { lessonsLeftToday, loadProgress, useProgress, withActivityCompleted, withLessonStarted } from "@/lib/progress";
+import {
+  lessonsLeftToday,
+  loadProgress,
+  pickReviewMaterial,
+  reviewDoneToday,
+  useProgress,
+  withActivityCompleted,
+  withLessonStarted,
+  withMistakes,
+  withReviewDone,
+} from "@/lib/progress";
 import { getScenario } from "@/lib/scenarios";
 import { playSound } from "@/lib/sounds";
 import { compareSpeech, speak, useSpeechRecognition } from "@/lib/speech";
@@ -288,9 +298,13 @@ function correctLabel(exercise: Exercise) {
 export default function LessonPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const isReview = id === REVIEW_ID;
   const scenario = getScenario(id);
   const node = findNode(`${id}:licao`);
+  const title = isReview ? "Revisão do dia" : scenario?.title;
   const { progress, update } = useProgress();
+  // Palavras e erros escolhidos para a revisão de hoje.
+  const reviewRef = useRef<ReturnType<typeof pickReviewMaterial> | null>(null);
 
   const [queue, setQueue] = useState<Exercise[]>([]);
   const [total, setTotal] = useState(0);
@@ -310,13 +324,28 @@ export default function LessonPage() {
       router.replace("/planos");
       return;
     }
+    let body: unknown = { scenarioId: id };
+    if (isReview) {
+      const current = loadProgress();
+      const material = pickReviewMaterial(current);
+      if (!material.available) {
+        setError("Ainda não há o que revisar. Complete uma conversa e eu monto sua revisão com as suas palavras e erros.");
+        return;
+      }
+      reviewRef.current = material;
+      body = {
+        level: current.level ?? "A1",
+        words: material.words.map((w) => ({ term: w.term, meaning: w.meaning })),
+        mistakes: material.mistakes.map((m) => ({ said: m.said, correct: m.correct, explanation: m.explanation })),
+      };
+    }
     loadingRef.current = true;
     setError(null);
     try {
-      const res = await fetch("/api/exercises", {
+      const res = await fetch(isReview ? "/api/review" : "/api/exercises", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scenarioId: id }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (res.status === 401) return router.replace(`/entrar?next=${encodeURIComponent(`/licao/${id}`)}`);
@@ -331,11 +360,11 @@ export default function LessonPage() {
     } finally {
       loadingRef.current = false;
     }
-  }, [id, router, update]);
+  }, [id, isReview, router, update]);
 
   useEffect(() => {
-    if (scenario) void load();
-  }, [scenario, load]);
+    if (scenario || isReview) void load();
+  }, [scenario, isReview, load]);
 
   const exercise = queue[position];
 
@@ -356,17 +385,41 @@ export default function LessonPage() {
       playSound(correct ? "correct" : "wrong", progress.settings.sounds);
       if (!correct) {
         setMistakes((m) => m + 1);
+        // Guarda o erro para a revisão do dia.
+        const said =
+          typeof answer === "number" ? (exercise.options[answer] ?? "") : Array.isArray(answer) ? answer.join(" ") : "";
+        update((p) => withMistakes(p, [{ said, correct: correctLabel(exercise), explanation: exercise.tip }]));
         // Como no Duolingo: o que o aluno errou volta no fim da lição.
         if (exercise.type !== "speak") setQueue((q) => [...q, exercise]);
       }
       setResult({ correct, answerLabel: correctLabel(exercise), heard });
     },
-    [answer, exercise, result, progress.settings.sounds],
+    [answer, exercise, result, progress.settings.sounds, update],
   );
 
   const finish = useCallback(() => {
     setFinished(true);
     playSound("complete", progress.settings.sounds);
+    if (isReview) {
+      const material = reviewRef.current;
+      update((p) =>
+        withReviewDone(
+          withActivityCompleted(p, {
+            id: crypto.randomUUID(),
+            nodeId: `review:${new Date().toISOString().slice(0, 10)}`,
+            scenarioId: REVIEW_ID,
+            kind: "review",
+            date: new Date().toISOString(),
+            score: Math.round((total / (total + mistakes)) * 100),
+            // A revisão dá XP uma vez por dia; refazer é treino extra.
+            xp: reviewDoneToday(p) ? 0 : XP_REVIEW,
+          }),
+          material?.words.map((w) => w.term) ?? [],
+          material?.mistakes.map((m) => m.id) ?? [],
+        ),
+      );
+      return;
+    }
     update((p) =>
       withActivityCompleted(p, {
         id: crypto.randomUUID(),
@@ -378,7 +431,7 @@ export default function LessonPage() {
         xp: XP_EXERCISE_LESSON + (mistakes === 0 ? XP_PERFECT_BONUS : 0),
       }),
     );
-  }, [id, total, mistakes, update, progress.settings.sounds]);
+  }, [id, isReview, total, mistakes, update, progress.settings.sounds]);
 
   const next = useCallback(() => {
     setResult(null);
@@ -415,9 +468,30 @@ export default function LessonPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [answer, result, finished, exercise, check, next]);
 
-  if (!scenario || !node) return <ErrorScreen message="Lição não encontrada." />;
+  if (!isReview && (!scenario || !node)) return <ErrorScreen message="Lição não encontrada." />;
   if (error) return <ErrorScreen message={error} onRetry={load} />;
-  if (!queue.length) return <LoadingLesson message={`Preparando sua lição: ${scenario.title}`} />;
+  if (!queue.length) return <LoadingLesson message={isReview ? "Montando sua revisão do dia" : `Preparando sua lição: ${title}`} />;
+
+  if (finished && isReview) {
+    const accuracy = Math.round((total / (total + mistakes)) * 100);
+    const material = reviewRef.current;
+    return (
+      <CompletionScreen
+        title="Revisão concluída!"
+        subtitle={`Você revisou ${material?.words.length ?? 0} palavras e ${material?.mistakes.length ?? 0} erros antigos. Amanhã tem uma nova missão.`}
+        tiles={[
+          { label: "XP ganho", value: `+${progress.sessions[0]?.xp ?? 0}`, tone: "sun" },
+          { label: "Precisão", value: `${accuracy}%`, tone: "ok" },
+          { label: "Revisados", value: String((material?.words.length ?? 0) + (material?.mistakes.length ?? 0)), tone: "sky" },
+        ]}
+        primary={
+          <Link href="/aprender" className="btn btn-primary">
+            Voltar para a viagem
+          </Link>
+        }
+      />
+    );
+  }
 
   if (finished) {
     const seconds = Math.round((Date.now() - startedAt.current) / 1000);
@@ -426,8 +500,8 @@ export default function LessonPage() {
     return (
       <CompletionScreen
         title={mistakes === 0 ? "Lição perfeita!" : "Carimbo conquistado!"}
-        stampCode={node.unit.code}
-        subtitle={`Agora use o que aprendeu numa conversa de verdade: ${scenario.title}.`}
+        stampCode={node?.unit.code}
+        subtitle={`Agora use o que aprendeu numa conversa de verdade: ${title}.`}
         tiles={[
           { label: "XP ganho", value: `+${xp}`, tone: "sun" },
           { label: "Precisão", value: `${accuracy}%`, tone: "ok" },

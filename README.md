@@ -5,8 +5,9 @@ App web para aprender inglês do A1 ao C1 viajando pelo mundo: lições rápidas
 ## O que o app faz
 
 - **Onboarding e nivelamento**: motivação, meta diária e teste de 15 perguntas do A1 ao C1.
-- **Roteiro**: 5 cidades (Nova York, Londres, Dublin, Toronto e Sydney) e 20 paradas. Cada parada tem uma **lição** (10 exercícios gerados pela IA) e uma **conversa** por voz, com ajuste a cada frase e relatório no final.
+- **Roteiro**: 5 cidades (Nova York, Londres, Dublin, Toronto e Sydney) e 40 paradas, 8 por cidade, somando 80 carimbos. Cada parada tem uma **lição** (10 exercícios gerados pela IA) e uma **conversa** por voz, com ajuste a cada frase e relatório no final.
 - **Passaporte**: carimbos por cidade, XP, ofensiva, meta diária, conquistas, sons e confetes.
+- **Missão do dia**: uma revisão personalizada, montada pela IA com as palavras do caderno e os erros que o aluno cometeu nas lições e conversas. Vale XP uma vez por dia e não acaba quando o roteiro termina.
 - **Vocabulário**: palavras salvas, com áudio e revisão em cartões.
 - **Contas**: cadastro com e-mail e senha ou com o Google, recuperação de senha e progresso salvo na nuvem (aparece em qualquer aparelho).
 - **Planos**:

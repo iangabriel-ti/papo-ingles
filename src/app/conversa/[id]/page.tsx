@@ -8,7 +8,7 @@ import { BulbIcon, CheckIcon, MicIcon, SendIcon, SpeakerIcon, StopIcon, Translat
 import { Mascot } from "@/components/Mascot";
 import { LESSON_TURNS, XP_CONVERSATION } from "@/lib/config";
 import { explainInPortuguese, type Level } from "@/lib/levels";
-import { lessonsLeftToday, loadProgress, useProgress, withActivityCompleted, withLessonStarted } from "@/lib/progress";
+import { lessonsLeftToday, loadProgress, useProgress, withActivityCompleted, withLessonStarted, withMistakes } from "@/lib/progress";
 import { FREE_TALK, getScenario, unitOf } from "@/lib/scenarios";
 import { playSound } from "@/lib/sounds";
 import { speak, stopSpeaking, useSpeechRecognition } from "@/lib/speech";
@@ -147,6 +147,11 @@ export default function ConversationPage() {
           return [...next, { kind: "teacher", turn }];
         });
         setSuggestions(turn.suggestions);
+        if (userText && turn.correction.has_issue) {
+          update((p) =>
+            withMistakes(p, [{ said: userText, correct: turn.correction.corrected, explanation: turn.correction.explanation }]),
+          );
+        }
         if (userText) playSound(turn.correction.has_issue ? "tap" : "correct", loadProgress().settings.sounds);
         say(turn.reply);
       } catch (e) {
@@ -162,7 +167,7 @@ export default function ConversationPage() {
         setWaiting(false);
       }
     },
-    [history, id, isFreeTalk, level, router, say, studentTurns],
+    [history, id, isFreeTalk, level, router, say, studentTurns, update],
   );
 
   // Começa a conversa: o Kiko fala primeiro.

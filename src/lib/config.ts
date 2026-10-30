@@ -24,6 +24,10 @@ export const TRIAL_DAYS = 7;
 export const XP_EXERCISE_LESSON = 10;
 export const XP_PERFECT_BONUS = 5;
 export const XP_CONVERSATION = 20;
+export const XP_REVIEW = 15;
+
+// Endereço da revisão do dia (usa a mesma tela das lições).
+export const REVIEW_ID = "revisao";
 
 export const DAILY_GOALS = [
   { xp: 20, label: "Casual", minutes: 5 },

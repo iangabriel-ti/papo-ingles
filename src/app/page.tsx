@@ -8,6 +8,7 @@ import { PricingCards } from "@/components/PricingCards";
 import { Stamp } from "@/components/Stamp";
 import { TRIAL_DAYS } from "@/lib/config";
 import { LEVEL_INFO } from "@/lib/levels";
+import { PATH } from "@/lib/path";
 import { useProgress } from "@/lib/progress";
 import { UNITS } from "@/lib/scenarios";
 
@@ -157,7 +158,7 @@ export default function Home() {
       <section className="border-y border-line bg-white py-16">
         <div className="mx-auto max-w-5xl px-4">
           <h2 className="heading text-center text-3xl">Cinco cidades, do zero à fluência</h2>
-          <p className="mt-3 text-center text-muted">Um roteiro no padrão internacional CEFR, com 40 carimbos para conquistar.</p>
+          <p className="mt-3 text-center text-muted">Um roteiro no padrão internacional CEFR, com {PATH.length} carimbos para conquistar.</p>
           <ol className="mt-10 grid gap-4 sm:grid-cols-5">
             {UNITS.map((unit) => (
               <li key={unit.level} className="card flex flex-col items-center bg-paper p-5 text-center">
